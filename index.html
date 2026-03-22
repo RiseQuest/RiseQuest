@@ -3,79 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RiseQuest | Level Up Your Life</title>
+    <title>RiseQuest | Ascend Your Life</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        .castle-stage { transition: all 0.5s ease; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2)); }
-        .gradient-bg { background: linear-gradient(135deg, #FFFDE7 0%, #E1F5FE 100%); }
+        body { font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s; }
+        .dark { background-color: #0f172a; color: #f8fafc; }
+        .path-node { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; cursor: pointer; transition: transform 0.2s; }
+        .path-node:hover { transform: scale(1.1); }
+        .zig-zag:nth-child(even) { transform: translateX(40px); }
+        .zig-zag:nth-child(odd) { transform: translateX(-40px); }
+        .locked { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+        .unlocked { background: #facc15; color: #854d0e; box-shadow: 0 4px 0 #ca8a04; }
+        .completed { background: #22c55e; color: white; box-shadow: 0 4px 0 #16a34a; }
+        .sidebar-icon { font-size: 1.5rem; }
+        .castle-container { font-size: 5rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.1)); }
     </style>
 </head>
-<body class="gradient-bg min-h-screen font-sans">
-    <div id="app" class="max-w-md mx-auto p-6">
-        <div id="auth-screen" class="bg-white rounded-3xl p-8 shadow-xl mt-10">
-            <h1 class="text-3xl font-bold text-blue-600 mb-2">RiseQuest</h1>
-            <p class="text-gray-500 mb-6">Build your discipline. Build your castle.</p>
-            <input id="user-email" type="email" placeholder="Email" class="w-full p-4 mb-4 border rounded-xl">
-            <input id="user-pass" type="password" placeholder="Password" class="w-full p-4 mb-6 border rounded-xl">
-            <button onclick="handleSignup()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg transition">Enter the Kingdom</button>
-        </div>
+<body class="bg-slate-50 text-slate-900">
 
-        <div id="main-dashboard" class="hidden">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-xl font-bold">Welcome, <span id="display-name">Warrior</span></h2>
-                    <p class="text-sm text-blue-500">Level <span id="lvl">1</span> • <span id="streak">0</span> 🔥</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">🏰</div>
-            </div>
-
-            <div class="text-center mb-10">
-                <div id="castle-icon" class="text-8xl mb-4">🏚️</div>
-                <p id="castle-rank" class="font-semibold text-gray-700">Dilapidated Shack</p>
-            </div>
-
+    <div id="app" class="max-w-md mx-auto min-h-screen pb-24">
+        
+        <section id="auth-section" class="p-8 pt-20">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-2">RiseQuest</h1>
+            <p class="text-slate-500 mb-8">Professional Habit Gamification</p>
             <div class="space-y-4">
-                <h3 class="font-bold text-lg">Daily Quests</h3>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center">
-                    <span>20 Pushups</span>
-                    <button onclick="completeTask()" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">Done</button>
+                <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 rounded-2xl border border-slate-200">
+                <input id="reg-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border border-slate-200">
+                <input id="reg-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border border-slate-200">
+                <button onclick="startOnboarding()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-blue-700">Create Account</button>
+            </div>
+        </section>
+
+        <section id="onboarding-section" class="hidden p-8 pt-20">
+            <div id="q1">
+                <h2 class="text-2xl font-bold mb-6">Do you feel like you’re wasting your morning?</h2>
+                <div class="space-y-3">
+                    <button onclick="nextStep('yes')" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl text-left hover:border-blue-400">Yes</button>
+                    <button onclick="nextStep('no')" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl text-left hover:border-blue-400">No</button>
+                    <button onclick="nextStep('idk')" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl text-left hover:border-blue-400">I don't know</button>
                 </div>
             </div>
-        </div>
+            <div id="q2" class="hidden">
+                <h2 id="q2-text" class="text-2xl font-bold mb-6">How long do you scroll?</h2>
+                <div id="q2-options" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <section id="main-app" class="hidden px-6 pt-6">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🔥</span>
+                    <span id="streak-val" class="font-bold">0</span>
+                </div>
+                <div class="font-black text-blue-600 italic">RISEQUEST</div>
+                <div id="user-initials" class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center font-bold">U</div>
+            </div>
+
+            <div id="view-home" class="view">
+                <div class="text-center mb-8">
+                    <div id="castle-display" class="castle-container">🏚️</div>
+                    <p class="font-bold text-slate-500 uppercase tracking-widest text-xs mt-2">Current Evolution: <span id="castle-name">Shack</span></p>
+                </div>
+                
+                <h3 class="font-bold text-xl mb-4">Today's Routine</h3>
+                <div id="routine-list" class="space-y-3"></div>
+            </div>
+
+            <div id="view-road" class="view hidden pb-10">
+                <h2 class="text-center font-bold text-xl mb-10">The Path to Mastery</h2>
+                <div id="road-container" class="flex flex-col items-center space-y-8"></div>
+            </div>
+        </section>
+
+        <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 p-4 flex justify-around items-center">
+            <button onclick="showView('road')" class="sidebar-icon">🗺️</button>
+            <button onclick="showView('home')" class="w-16 h-16 bg-blue-600 rounded-full text-white text-3xl flex items-center justify-center -mt-8 border-4 border-white shadow-xl">🏠</button>
+            <button onclick="toggleDarkMode()" class="sidebar-icon">🌙</button>
+        </nav>
+
     </div>
 
     <script>
-        function handleSignup() {
-            const email = document.getElementById('user-email').value;
-            if(email.includes('@')) {
-                localStorage.setItem('riseQuest_user', email);
-                localStorage.setItem('riseQuest_lvl', 1);
-                showDashboard();
-            } else { alert("Enter a valid email"); }
+        let userData = { name: '', email: '', pass: '', lvl: 1, streak: 0, routine: [], darkMode: false };
+
+        // INITIALIZE APP
+        window.onload = () => {
+            const saved = localStorage.getItem('RiseQuest_Pro_Data');
+            if(saved) {
+                userData = JSON.parse(saved);
+                if(userData.darkMode) document.body.classList.add('dark');
+                launchApp();
+            }
+        };
+
+        function startOnboarding() {
+            userData.name = document.getElementById('reg-name').value;
+            userData.email = document.getElementById('reg-email').value;
+            userData.pass = document.getElementById('reg-pass').value;
+            
+            if(!userData.email.includes('@')) return alert("Enter valid email");
+            
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('onboarding-section').classList.remove('hidden');
         }
 
-        function showDashboard() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('main-dashboard').classList.remove('hidden');
+        function nextStep(choice) {
+            document.getElementById('q1').classList.add('hidden');
+            const q2 = document.getElementById('q2');
+            const q2Text = document.getElementById('q2-text');
+            const q2Opt = document.getElementById('q2-options');
+            q2.classList.remove('hidden');
+
+            if(choice === 'yes' || choice === 'idk') {
+                q2Text.innerText = "How long do you scroll every morning?";
+                const opts = ['<1 hour', '1-2 hours', '2-3 hours', '3+ hours'];
+                opts.forEach(o => {
+                    q2Opt.innerHTML += `<button onclick="generateRoutine('${o}')" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl text-left">${o}</button>`;
+                });
+            } else {
+                q2Text.innerText = "What's the first thing you do?";
+                const opts = ['Check Phone', 'Exercise', 'Meditation', 'Breakfast'];
+                opts.forEach(o => {
+                    q2Opt.innerHTML += `<button onclick="generateRoutine('${o}')" class="w-full p-4 bg-white border-2 border-slate-100 rounded-2xl text-left">${o}</button>`;
+                });
+            }
+        }
+
+        function generateRoutine(val) {
+            userData.routine = ['7:00 AM Alarm', '500ml Water', '20 Pushups', '10m Sunlight', 'Journaling'];
+            if(val.includes('2-3') || val.includes('3+')) {
+                userData.routine.push('1-Hour Run (Cold)', 'Digital Detox');
+            }
+            saveAndLaunch();
+        }
+
+        function saveAndLaunch() {
+            localStorage.setItem('RiseQuest_Pro_Data', JSON.stringify(userData));
+            launchApp();
+        }
+
+        function launchApp() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('onboarding-section').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            
+            document.getElementById('user-initials').innerText = userData.name[0];
+            document.getElementById('streak-val').innerText = userData.streak;
+            
+            renderRoutine();
+            renderRoad();
+            updateCastle();
+        }
+
+        function renderRoutine() {
+            const list = document.getElementById('routine-list');
+            list.innerHTML = '';
+            userData.routine.forEach(task => {
+                list.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
+                        <span class="font-medium">${task}</span>
+                        <input type="checkbox" class="w-6 h-6 rounded-full" onclick="completeTask()">
+                    </div>
+                `;
+            });
+        }
+
+        function renderRoad() {
+            const road = document.getElementById('road-container');
+            road.innerHTML = '';
+            for(let i=1; i<=250; i++) {
+                let status = i < userData.lvl ? 'completed' : (i === userData.lvl ? 'unlocked' : 'locked');
+                road.innerHTML += `<div class="path-node zig-zag ${status}">${i}</div>`;
+            }
         }
 
         function completeTask() {
-            let lvl = parseInt(localStorage.getItem('riseQuest_lvl')) + 1;
-            localStorage.setItem('riseQuest_lvl', lvl);
-            document.getElementById('lvl').innerText = lvl;
-            updateCastle(lvl);
+            userData.lvl++;
+            userData.streak++;
+            updateCastle();
+            renderRoad();
+            localStorage.setItem('RiseQuest_Pro_Data', JSON.stringify(userData));
         }
 
-        function updateCastle(lvl) {
-            const icon = document.getElementById('castle-icon');
-            const rank = document.getElementById('castle-rank');
-            if(lvl > 5) { icon.innerText = "🏡"; rank.innerText = "Wooden Hut"; }
-            if(lvl > 15) { icon.innerText = "🏠"; rank.innerText = "Stone Cottage"; }
-            if(lvl > 50) { icon.innerText = "🏰"; rank.innerText = "Fortified Manor"; }
+        function updateCastle() {
+            const display = document.getElementById('castle-display');
+            const name = document.getElementById('castle-name');
+            const l = userData.lvl;
+
+            if(l < 10) { display.innerText = "🏚️"; name.innerText = "Shack"; }
+            else if(l < 25) { display.innerText = "🏡"; name.innerText = "Cottage"; }
+            else if(l < 50) { display.innerText = "🏠"; name.innerText = "Manor"; }
+            else if(l < 100) { display.innerText = "🏰"; name.innerText = "Castle"; }
+            else { display.innerText = "💎"; name.innerText = "Divine Citadel"; }
         }
 
-        // Auto-login check
-        if(localStorage.getItem('riseQuest_user')) { showDashboard(); }
+        function showView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+        }
+
+        function toggleDarkMode() {
+            userData.darkMode = !userData.darkMode;
+            document.body.classList.toggle('dark');
+            saveAndLaunch();
+        }
     </script>
 </body>
 </html>
