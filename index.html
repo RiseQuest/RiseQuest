@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RiseQuest | Level Up Your Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .castle-stage { transition: all 0.5s ease; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2)); }
+        .gradient-bg { background: linear-gradient(135deg, #FFFDE7 0%, #E1F5FE 100%); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen font-sans">
+    <div id="app" class="max-w-md mx-auto p-6">
+        <div id="auth-screen" class="bg-white rounded-3xl p-8 shadow-xl mt-10">
+            <h1 class="text-3xl font-bold text-blue-600 mb-2">RiseQuest</h1>
+            <p class="text-gray-500 mb-6">Build your discipline. Build your castle.</p>
+            <input id="user-email" type="email" placeholder="Email" class="w-full p-4 mb-4 border rounded-xl">
+            <input id="user-pass" type="password" placeholder="Password" class="w-full p-4 mb-6 border rounded-xl">
+            <button onclick="handleSignup()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-bold py-4 rounded-xl shadow-lg transition">Enter the Kingdom</button>
+        </div>
+
+        <div id="main-dashboard" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-xl font-bold">Welcome, <span id="display-name">Warrior</span></h2>
+                    <p class="text-sm text-blue-500">Level <span id="lvl">1</span> • <span id="streak">0</span> 🔥</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-2xl">🏰</div>
+            </div>
+
+            <div class="text-center mb-10">
+                <div id="castle-icon" class="text-8xl mb-4">🏚️</div>
+                <p id="castle-rank" class="font-semibold text-gray-700">Dilapidated Shack</p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="font-bold text-lg">Daily Quests</h3>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-yellow-400 flex justify-between items-center">
+                    <span>20 Pushups</span>
+                    <button onclick="completeTask()" class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleSignup() {
+            const email = document.getElementById('user-email').value;
+            if(email.includes('@')) {
+                localStorage.setItem('riseQuest_user', email);
+                localStorage.setItem('riseQuest_lvl', 1);
+                showDashboard();
+            } else { alert("Enter a valid email"); }
+        }
+
+        function showDashboard() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-dashboard').classList.remove('hidden');
+        }
+
+        function completeTask() {
+            let lvl = parseInt(localStorage.getItem('riseQuest_lvl')) + 1;
+            localStorage.setItem('riseQuest_lvl', lvl);
+            document.getElementById('lvl').innerText = lvl;
+            updateCastle(lvl);
+        }
+
+        function updateCastle(lvl) {
+            const icon = document.getElementById('castle-icon');
+            const rank = document.getElementById('castle-rank');
+            if(lvl > 5) { icon.innerText = "🏡"; rank.innerText = "Wooden Hut"; }
+            if(lvl > 15) { icon.innerText = "🏠"; rank.innerText = "Stone Cottage"; }
+            if(lvl > 50) { icon.innerText = "🏰"; rank.innerText = "Fortified Manor"; }
+        }
+
+        // Auto-login check
+        if(localStorage.getItem('riseQuest_user')) { showDashboard(); }
+    </script>
+</body>
+</html>
