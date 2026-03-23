@@ -15,7 +15,6 @@
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animations */
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes bounceGlow { 0%, 100% { filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.4)); transform: translateY(0); } 50% { filter: drop-shadow(0 0 25px rgba(250, 204, 21, 0.8)); transform: translateY(-5px); } }
@@ -23,17 +22,17 @@
         .anim-slide { animation: slideUp 0.4s ease-out forwards; }
         .anim-bounce-glow { animation: bounceGlow 3s infinite; }
         
-        /* Duolingo Road */
         .node { width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: transform 0.2s; border-bottom: 8px solid rgba(0,0,0,0.2); position: relative; z-index: 10; margin: 0 auto;}
         .node:active { transform: translateY(6px); border-bottom-width: 2px; }
-        .node.locked { background: #e2e8f0; color: #94a3b8; border-bottom-color: #cbd5e1; }
+        .node.locked { background: #cbd5e1; color: #64748b; border-bottom-color: #94a3b8; filter: grayscale(100%); }
         .node.current { background: #facc15; color: #854d0e; border-bottom-color: #ca8a04; box-shadow: 0 0 20px rgba(250, 204, 21, 0.5); }
         .node.completed { background: #3b82f6; color: white; border-bottom-color: #2563eb; }
         
-        /* Modals & UI */
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .dark .glass-nav { background: rgba(15, 23, 42, 0.95); border-color: #334155; }
-        .huge-castle { font-size: 8rem; line-height: 1; filter: drop-shadow(0 20px 25px rgba(0,0,0,0.15)); transition: all 0.3s ease; }
+        .huge-castle { font-size: 8rem; line-height: 1; transition: all 0.3s ease; display: inline-block; }
+        .locked-castle { filter: brightness(0) invert(0.2); opacity: 0.8; }
+        .dark .locked-castle { filter: brightness(0) invert(0.8); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
@@ -46,25 +45,24 @@
                 <p class="text-slate-500 font-semibold mt-2">Level up your life.</p>
             </div>
 
-            <div id="signup-box" class="space-y-4 anim-pop">
-                <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="reg-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="reg-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <button onclick="handleAuth('signup')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign Up</button>
-                <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Already have an account? <span class="text-brand font-bold">Sign In</span></p>
-            </div>
-
-            <div id="signin-box" class="space-y-4 hidden anim-pop">
-                <input id="log-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="log-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <button onclick="handleAuth('signin')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign In</button>
+            <form id="login-form" onsubmit="handleAuth(event, 'signin')" class="space-y-4 anim-pop hidden">
+                <input id="log-email" type="email" autocomplete="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="log-pass" type="password" autocomplete="current-password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <button type="submit" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign In</button>
                 <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Need an account? <span class="text-brand font-bold">Sign Up</span></p>
-            </div>
+            </form>
+
+            <form id="signup-form" onsubmit="handleAuth(event, 'signup')" class="space-y-4 anim-pop">
+                <input id="reg-name" type="text" autocomplete="name" placeholder="Full Name" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-email" type="email" autocomplete="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-pass" type="password" autocomplete="new-password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <button type="submit" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign Up</button>
+                <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Already have an account? <span class="text-brand font-bold">Sign In</span></p>
+            </form>
         </section>
 
         <section id="onboarding-view" class="hidden p-8 pt-20 min-h-screen flex flex-col justify-center">
-            
-            <div id="ob-q1" class="anim-slide">
+             <div id="ob-q1" class="anim-slide">
                 <h2 class="text-3xl font-black mb-6 text-center">Do you feel like you're wasting your morning? 🌅</h2>
                 <div class="space-y-4">
                     <button onclick="nextOB('q1', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">📱</span><div><div class="font-bold text-xl">Yes</div><div class="text-xs text-slate-500">I spend too much time scrolling.</div></div></button>
@@ -76,8 +74,8 @@
             <div id="ob-q2-tired" class="hidden anim-slide">
                 <h2 class="text-3xl font-black mb-6 text-center">Do you get tired during the day? 🥱</h2>
                 <div class="space-y-4">
-                    <button onclick="nextOB('tired', 'yes')" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">📉</span> Yes, I crash</button>
-                    <button onclick="nextOB('tired', 'no')" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">🔋</span> No, I have energy</button>
+                    <button onclick="nextOB('tired', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">📉</span> Yes, I crash</button>
+                    <button onclick="nextOB('tired', 'no')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">🔋</span> No, I have energy</button>
                 </div>
             </div>
 
@@ -91,130 +89,119 @@
             <div id="ob-q4-scroll" class="hidden anim-slide">
                 <h2 class="text-3xl font-black mb-6 text-center">How many hours do you spend on your phone in the morning? ⏱️</h2>
                 <div class="space-y-4">
-                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">None</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">< 1 hour</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">1-2 hours</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">3+ hours</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">None</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">< 1 hour</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">1-2 hours</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">3+ hours</button>
                 </div>
             </div>
         </section>
 
-
         <div id="main-app" class="hidden">
             
-            <div class="flex justify-between items-center p-6 pb-4 sticky top-0 z-20 glass-nav shadow-sm">
-                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center p-6 pb-4 sticky top-0 z-20 glass-nav shadow-sm border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                     <i class="fa-solid fa-fire text-orange-500 text-xl anim-bounce-glow"></i>
                     <span id="ui-streak" class="font-black text-xl">0</span>
                 </div>
                 <div class="font-black text-brand text-2xl tracking-tighter">RISEQUEST</div>
-                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
                     <span class="font-black text-xl text-brand" id="ui-lvl">Lvl 1</span>
                 </div>
             </div>
 
             <div id="view-home" class="app-view p-6 pt-2">
-                <div class="text-center mb-10 relative mt-4">
-                    <button onclick="changeCastleView(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="text-center mb-10 relative mt-4 h-48 flex flex-col items-center justify-center">
+                    <button onclick="changeCastleView(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-md z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-left"></i></button>
                     
-                    <div id="castle-display" class="huge-castle anim-bounce-glow">🏕️</div>
+                    <div id="castle-display-container" class="relative">
+                        <div id="castle-display" class="huge-castle anim-bounce-glow">🏕️</div>
+                        <div id="castle-lock-icon" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-slate-400 drop-shadow-lg"><i class="fa-solid fa-lock"></i></div>
+                    </div>
+
                     <h3 id="castle-name" class="text-2xl font-black mt-4">Tent</h3>
-                    <p id="castle-status" class="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Unlocked</p>
+                    <p id="castle-status" class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Unlocked</p>
                     
-                    <button onclick="changeCastleView(1)" class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button onclick="changeCastleView(1)" class="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-md z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
 
                 <div class="flex justify-between items-end mb-4">
                     <h3 class="font-black text-2xl">Morning Protocol</h3>
-                    <button onclick="toggleEditRoutine()" id="edit-routine-btn" class="text-sm font-bold text-brand bg-blue-50 px-3 py-1 rounded-lg">Edit</button>
+                    <button onclick="toggleEditRoutine()" id="edit-routine-btn" class="text-sm font-bold text-brand bg-blue-50 dark:bg-slate-800 px-3 py-1 rounded-lg">Edit</button>
                 </div>
                 
                 <div id="routine-list" class="space-y-3 pb-4"></div>
                 
-                <button id="add-task-btn" onclick="addRoutineTask()" class="hidden w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold mb-10"><i class="fa-solid fa-plus mr-2"></i>Add Task</button>
-                
-                <button id="complete-protocol-btn" onclick="completeProtocol()" class="w-full bg-brand text-white font-black text-xl py-5 rounded-2xl shadow-[0_10px_20px_rgba(59,130,246,0.3)] active:scale-95 transition flex justify-center items-center mt-6">
-                    COMPLETE PROTOCOL <i class="fa-solid fa-bolt ml-2"></i>
-                </button>
+                <button id="add-task-btn" onclick="addRoutineTask()" class="hidden w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-slate-500 font-bold mb-10"><i class="fa-solid fa-plus mr-2"></i>Add Task</button>
             </div>
 
             <div id="view-road" class="app-view hidden text-center">
-                <div class="flex overflow-x-auto hide-scroll space-x-3 p-4 bg-slate-100 dark:bg-slate-800 border-b border-slate-200">
+                <div class="flex overflow-x-auto hide-scroll space-x-3 p-4 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                     <div id="phase-tabs" class="flex space-x-2"></div>
                 </div>
-                
                 <div class="p-6">
-                    <h2 id="phase-title" class="text-2xl font-black mb-2 text-brand">Phase 1: Fix the Morning</h2>
+                    <h2 id="phase-title" class="text-2xl font-black mb-2 text-brand">Phase 1</h2>
                     <p id="phase-desc" class="text-slate-500 mb-8 font-semibold">Master your wake-up routine.</p>
-                    
-                    <div id="road-map" class="flex flex-col items-center space-y-6 pb-12">
-                        </div>
+                    <div id="road-map" class="flex flex-col items-center space-y-6 pb-12"></div>
                 </div>
             </div>
 
             <div id="view-journal" class="app-view hidden">
-                <div class="flex justify-center space-x-2 p-4 border-b border-slate-200">
+                <div class="flex justify-center space-x-2 p-4 border-b border-slate-200 dark:border-slate-700">
                     <button onclick="switchJournal('daily')" id="btn-j-daily" class="px-6 py-2 rounded-full font-bold bg-brand text-white transition">Daily</button>
-                    <button onclick="switchJournal('weekly')" id="btn-j-weekly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 transition">Weekly</button>
-                    <button onclick="switchJournal('monthly')" id="btn-j-monthly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 transition">Monthly</button>
+                    <button onclick="switchJournal('weekly')" id="btn-j-weekly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 transition">Weekly</button>
+                    <button onclick="switchJournal('monthly')" id="btn-j-monthly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 transition">Monthly</button>
                 </div>
-                <div class="p-6 space-y-6" id="journal-content">
-                    </div>
+                <div class="p-6 space-y-6" id="journal-content"></div>
                 <div class="p-6 pt-0">
-                    <button onclick="saveJournal()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg">Save Entries</button>
+                    <button onclick="saveJournal()" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">Save Entries</button>
                 </div>
             </div>
 
             <div id="view-achievements" class="app-view hidden">
-                <div class="flex overflow-x-auto hide-scroll space-x-2 p-4 border-b border-slate-200" id="ach-tabs"></div>
-                
+                <div class="flex overflow-x-auto hide-scroll space-x-2 p-4 border-b border-slate-200 dark:border-slate-700" id="ach-tabs"></div>
                 <div class="p-6">
-                    <div id="achievements-grid" class="grid grid-cols-2 gap-4 pb-12">
-                        </div>
+                    <div id="achievements-grid" class="grid grid-cols-2 gap-4 pb-12"></div>
                 </div>
             </div>
 
             <div id="view-account" class="app-view hidden p-6">
                 <h2 class="text-3xl font-black mb-6">Account</h2>
                 
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mb-6 text-center border border-slate-100 relative">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mb-6 text-center border border-slate-100 dark:border-slate-700 relative">
                     <input type="file" id="avatar-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-                    
-                    <div onclick="document.getElementById('avatar-upload').click()" class="w-28 h-28 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-5xl mb-4 font-black shadow-lg cursor-pointer overflow-hidden border-4 border-white relative group">
+                    <div onclick="document.getElementById('avatar-upload').click()" class="w-28 h-28 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-5xl mb-4 font-black shadow-lg cursor-pointer overflow-hidden border-4 border-white dark:border-slate-700 relative group">
                         <img id="profile-img" src="" class="w-full h-full object-cover hidden">
                         <span id="profile-emoji">👤</span>
-                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                            <i class="fa-solid fa-camera text-white text-xl"></i>
-                        </div>
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-camera text-white text-xl"></i></div>
                     </div>
-                    
                     <h3 class="font-black text-2xl" id="acc-name">User</h3>
                     <p class="text-slate-500 font-bold text-sm" id="acc-stats">Lvl 1 • 0 Streak</p>
                     <p class="text-slate-400 text-xs mt-1" id="acc-date">Joined: Today</p>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm space-y-6 border border-slate-100">
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase">Email</label>
-                        <div class="font-bold text-lg" id="acc-email">email@test.com</div>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase">Password</label>
-                        <div class="flex items-center justify-between">
-                            <input type="password" id="acc-pass" class="bg-transparent font-bold text-lg outline-none w-2/3 border-b border-slate-200 pb-1" value="********">
-                            <button onclick="saveNewPassword()" class="text-brand font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">Save</button>
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm space-y-4 border border-slate-100 dark:border-slate-700">
+                    <div><label class="text-xs font-bold text-slate-400 uppercase">Email</label><div class="font-bold text-lg" id="acc-email">email</div></div>
+                    <hr class="border-slate-100 dark:border-slate-700">
+                    
+                    <form onsubmit="saveNewPassword(event)" class="space-y-3">
+                        <label class="text-xs font-bold text-slate-400 uppercase">Security</label>
+                        <div>
+                            <input type="password" id="acc-pass-current" autocomplete="current-password" placeholder="Current Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
+                            <input type="password" id="acc-pass-new" autocomplete="new-password" placeholder="New Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
                         </div>
-                    </div>
+                        <button type="submit" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-3 rounded-xl active:scale-95 transition">Update Password</button>
+                    </form>
                 </div>
 
-                <div class="mt-6 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm flex justify-between items-center border border-slate-100" onclick="toggleTheme()">
+                <div class="mt-6 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm flex justify-between items-center border border-slate-100 dark:border-slate-700 cursor-pointer" onclick="toggleTheme()">
                     <div class="font-bold text-lg"><i class="fa-solid fa-moon text-indigo-500 mr-2"></i> Dark Mode</div>
                     <div class="w-14 h-8 bg-slate-200 dark:bg-brand rounded-full relative transition-colors duration-300 pointer-events-none">
                         <div id="theme-knob" class="w-6 h-6 bg-white rounded-full absolute top-1 left-1 shadow-md transition-transform duration-300"></div>
                     </div>
                 </div>
                 
-                <button onclick="logout()" class="w-full mt-6 bg-red-50 text-red-500 font-black text-lg py-4 rounded-2xl">Log Out</button>
+                <button onclick="logout()" class="w-full mt-6 bg-red-50 dark:bg-red-900/20 text-red-500 font-black text-lg py-4 rounded-2xl active:scale-95 transition">Log Out</button>
             </div>
         </div>
 
@@ -228,13 +215,22 @@
             <button onclick="switchTab('account')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-user text-2xl mb-1"></i><span class="text-[10px] font-bold">Account</span></button>
         </nav>
 
+        <div id="streak-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-t-8 border-brand">
+                <div class="text-6xl mb-4">🔥</div>
+                <h3 class="text-3xl font-black mb-2 text-brand">Great Job!</h3>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg">Morning protocol complete. Streak updated!</p>
+                <button onclick="closeStreakModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-700 dark:text-white active:scale-95 transition">Close</button>
+            </div>
+        </div>
+
         <div id="level-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-t-8 border-brand">
                 <h3 class="text-3xl font-black mb-2" id="modal-title">Phase Task</h3>
-                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg" id="modal-desc">Details here.</p>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg" id="modal-desc">Details</p>
                 <div class="flex flex-col space-y-3">
                     <button id="modal-btn-done" onclick="beatLevel()" class="w-full py-4 bg-brand text-white font-black text-xl rounded-2xl shadow-lg active:scale-95 transition">Complete Task</button>
-                    <button onclick="closeModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-500">Close</button>
+                    <button onclick="closeLevelModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-500">Close</button>
                 </div>
             </div>
         </div>
@@ -242,13 +238,13 @@
     </div>
 
     <script>
-        // --- DATA & STATE ---
         let db = { 
             name:'', email:'', pass:'', joinDate:'', streak:0, lvl:1, theme:'light', avatarStr:'', 
             routine:[{id:1, text:"Wake up at 6 AM", done:false}, {id:2, text:"Drink Water", done:false}, {id:3, text:"Make Bed", done:false}], 
-            journal: { daily:['','','','',''], weekly:['','','','',''], monthly:['','','','',''] }
+            journal: { daily:['','','','',''], weekly:['','','','',''], monthly:['','','','',''] },
+            completedToday: false
         };
-        const DB_KEY = 'RiseQuest_v3_Data';
+        const DB_KEY = 'RiseQuest_v4_Data';
         
         let isEditingRoutine = false;
         let castleViewIndex = 0;
@@ -257,7 +253,6 @@
         let activeJournalTab = 'daily';
         let modalLevelData = null;
 
-        // 15 Castles Setup
         const CASTLES = [
             { icon: '🏕️', name: 'Tent', req: {lvl: 1, phase: 1, streak: 0} },
             { icon: '🏚️', name: 'Shack', req: {lvl: 3, phase: 1, streak: 2} },
@@ -277,21 +272,24 @@
         ];
 
         const ROAD_PHASES = [
-            { name: "Fix the Morning", desc: "Build a foundation. Win the morning.", tasks: ["Wake up to first alarm", "Drink 500ml water", "Make your bed"] },
-            { name: "Iron Body", desc: "Physical mastery begins.", tasks: ["20 Pushups", "10 min stretch", "Go for a walk"] },
-            { name: "Clear Mind", desc: "Remove brain fog.", tasks: ["10 min Meditation", "Journal 1 page", "No phone for 1hr"] },
-            { name: "Conquer the Day", desc: "Sustain the energy.", tasks: ["Eat a healthy lunch", "Deep work for 2hrs", "Review goals"] },
-            { name: "Unbreakable", desc: "Hard habits only.", tasks: ["Cold Shower", "Intense Workout", "Read 10 pages"] },
-            { name: "Focus State", desc: "Eliminate distractions.", tasks: ["Delete social media app", "Screen time < 2hrs", "Plan tomorrow tonight"] },
-            { name: "The Vision", desc: "Start building the dream.", tasks: ["Research business idea", "Listen to educational podcast", "Connect with a mentor"] },
-            { name: "Execution", desc: "Put in the work.", tasks: ["Work on side hustle 1hr", "Publish content", "Track finances"] },
-            { name: "Empire", desc: "Scale your life.", tasks: ["Launch project", "Read a business book", "Invest money"] },
-            { name: "Mastery", desc: "The ultimate peak.", tasks: ["Teach someone else", "Perfect week execution", "Reflect on journey"] }
+            { name: "Morning Base", desc: "Build a foundation." },
+            { name: "Iron Body", desc: "Physical mastery begins." },
+            { name: "Clear Mind", desc: "Remove brain fog." },
+            { name: "Conquer Day", desc: "Sustain the energy." },
+            { name: "Unbreakable", desc: "Hard habits only." },
+            { name: "Deep Focus", desc: "Eliminate distractions." },
+            { name: "The Vision", desc: "Plan the dream." },
+            { name: "Execution", desc: "Put in the work." },
+            { name: "Empire", desc: "Scale your life." },
+            { name: "Mastery", desc: "The ultimate peak." }
         ];
 
-        const ACH_CATEGORIES = ['Streaks', 'Morning', 'Fitness', 'Mindset', 'Focus', 'Wealth', 'Business', 'Learning', 'Zen', 'Mastery'];
+        const ACH_CATEGORIES = [
+            {name: 'Streaks', emoji: '🔥'}, {name: 'Morning', emoji: '🌅'}, {name: 'Fitness', emoji: '💪'}, 
+            {name: 'Mindset', emoji: '🧠'}, {name: 'Focus', emoji: '🎯'}, {name: 'Wealth', emoji: '💰'}, 
+            {name: 'Business', emoji: '💼'}, {name: 'Learning', emoji: '📚'}, {name: 'Zen', emoji: '🧘'}, {name: 'Mastery', emoji: '👑'}
+        ];
 
-        // --- INIT ---
         window.onload = () => {
             if(localStorage.getItem(DB_KEY)) {
                 db = JSON.parse(localStorage.getItem(DB_KEY));
@@ -302,30 +300,31 @@
 
         function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
-        // --- AUTH & ONBOARDING ---
+        // --- AUTH ---
         function toggleAuth() {
-            document.getElementById('signup-box').classList.toggle('hidden');
-            document.getElementById('signin-box').classList.toggle('hidden');
+            document.getElementById('signup-form').classList.toggle('hidden');
+            document.getElementById('login-form').classList.toggle('hidden');
         }
 
-        function handleAuth(type) {
+        function handleAuth(e, type) {
+            e.preventDefault();
             if(type === 'signup') {
                 db.name = document.getElementById('reg-name').value;
                 db.email = document.getElementById('reg-email').value;
                 db.pass = document.getElementById('reg-pass').value;
                 db.joinDate = new Date().toLocaleDateString();
-                if(!db.email || !db.pass) return alert("Fill fields.");
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('onboarding-view').classList.remove('hidden');
             } else {
                 const em = document.getElementById('log-email').value;
                 const pa = document.getElementById('log-pass').value;
-                if(em === db.email && pa === db.pass || localStorage.getItem(DB_KEY)) {
+                if((em === db.email && pa === db.pass) || localStorage.getItem(DB_KEY)) {
                     initApp();
                 } else { alert("Invalid login"); }
             }
         }
 
+        // --- ONBOARDING ---
         function nextOB(current, ans) {
             document.getElementById(`ob-${current}`).classList.add('hidden');
             if(current === 'q1') {
@@ -343,12 +342,17 @@
             initApp();
         }
 
-        // --- CORE UI ---
+        // --- INIT APP ---
         function initApp() {
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('bottom-nav').classList.remove('hidden');
             
+            // Set Castle to highest unlocked
+            let furthest = 0;
+            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
+            castleViewIndex = furthest;
+
             updateTopBar();
             renderCastleView();
             renderProtocol();
@@ -366,7 +370,7 @@
             document.getElementById('ui-lvl').innerText = `Lvl ${db.lvl}`;
         }
 
-        // --- 1. HOME: CASTLE ---
+        // --- 1. CASTLE ---
         function changeCastleView(dir) {
             castleViewIndex += dir;
             if(castleViewIndex < 0) castleViewIndex = 0;
@@ -376,26 +380,31 @@
 
         function renderCastleView() {
             const c = CASTLES[castleViewIndex];
-            document.getElementById('castle-display').innerText = c.icon;
+            const display = document.getElementById('castle-display');
+            const lockIcon = document.getElementById('castle-lock-icon');
+            
+            display.innerText = c.icon;
             document.getElementById('castle-name').innerText = c.name;
             
-            const isUnlocked = db.lvl >= c.req.lvl && db.streak >= c.req.streak; // Simplified check
+            const isUnlocked = db.lvl >= c.req.lvl && db.streak >= c.req.streak;
             
             if(isUnlocked) {
                 document.getElementById('castle-status').innerHTML = `<span class="text-green-500"><i class="fa-solid fa-unlock text-xs"></i> Unlocked</span>`;
-                document.getElementById('castle-display').style.filter = 'drop-shadow(0 0 20px rgba(250, 204, 21, 0.6))';
+                display.classList.remove('locked-castle');
+                display.style.filter = '';
+                lockIcon.classList.add('hidden');
             } else {
-                document.getElementById('castle-status').innerHTML = `<i class="fa-solid fa-lock text-xs"></i> Req: Lvl ${c.req.lvl} | Streak ${c.req.streak} | Phase ${c.req.phase}`;
-                document.getElementById('castle-display').style.filter = 'grayscale(100%) opacity(50%)';
+                document.getElementById('castle-status').innerHTML = `<i class="fa-solid fa-lock text-xs"></i> Req: Lvl ${c.req.lvl} | Streak ${c.req.streak}`;
+                display.classList.add('locked-castle');
+                lockIcon.classList.remove('hidden');
             }
         }
 
-        // --- 1. HOME: PROTOCOL (Checklist) ---
+        // --- 1. PROTOCOL (Auto-streak) ---
         function toggleEditRoutine() {
             isEditingRoutine = !isEditingRoutine;
             document.getElementById('edit-routine-btn').innerText = isEditingRoutine ? "Done" : "Edit";
             document.getElementById('add-task-btn').classList.toggle('hidden');
-            document.getElementById('complete-protocol-btn').classList.toggle('hidden');
             renderProtocol();
         }
 
@@ -403,12 +412,12 @@
             const list = document.getElementById('routine-list');
             list.innerHTML = '';
             
-            db.routine.forEach((t, index) => {
+            db.routine.forEach(t => {
                 if(isEditingRoutine) {
                     list.innerHTML += `
-                        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center shadow-sm border border-slate-200">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center shadow-sm border border-slate-200 dark:border-slate-700">
                             <button onclick="deleteRoutineTask(${t.id})" class="text-red-500 mr-4"><i class="fa-solid fa-trash"></i></button>
-                            <input type="text" value="${t.text}" onblur="updateRoutineText(${t.id}, this.value)" class="flex-1 bg-transparent font-bold outline-none border-b border-slate-300">
+                            <input type="text" value="${t.text}" onblur="updateRoutineText(${t.id}, this.value)" class="flex-1 bg-transparent font-bold outline-none border-b border-slate-300 dark:border-slate-600">
                             <i class="fa-solid fa-pencil text-slate-300 ml-2"></i>
                         </div>
                     `;
@@ -416,7 +425,7 @@
                     const icon = t.done ? '<i class="fa-solid fa-circle-check text-green-500 text-2xl"></i>' : '<i class="fa-regular fa-circle text-slate-300 text-2xl"></i>';
                     const strike = t.done ? 'line-through text-slate-400' : 'font-bold';
                     list.innerHTML += `
-                        <div onclick="toggleProtocolTask(${t.id})" class="bg-white dark:bg-slate-800 p-5 rounded-2xl flex items-center shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition">
+                        <div onclick="toggleProtocolTask(${t.id})" class="bg-white dark:bg-slate-800 p-5 rounded-2xl flex items-center shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer active:scale-95 transition">
                             <div class="mr-4">${icon}</div>
                             <span class="text-lg ${strike}">${t.text}</span>
                         </div>
@@ -426,10 +435,43 @@
         }
 
         function toggleProtocolTask(id) {
+            if(db.completedToday) return; // Prevent unchecking if already finished today
+            
             const t = db.routine.find(x => x.id === id);
             t.done = !t.done;
             renderProtocol();
+            
+            // Auto check if all complete
+            const allDone = db.routine.every(x => x.done);
+            if(allDone && !db.completedToday) {
+                db.completedToday = true;
+                db.streak++;
+                saveDB();
+                updateTopBar();
+                document.getElementById('streak-modal').classList.remove('hidden');
+                document.getElementById('streak-modal').classList.add('flex');
+            } else {
+                saveDB();
+            }
+        }
+
+        function closeStreakModal() {
+            document.getElementById('streak-modal').classList.add('hidden');
+            document.getElementById('streak-modal').classList.remove('flex');
+            
+            // Check if castle leveled up
+            let furthest = 0;
+            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
+            if(furthest > castleViewIndex) {
+                castleViewIndex = furthest;
+                renderCastleView();
+            }
+            
+            // Reset routine for "tomorrow" simulation (In a real app, use date checking)
+            db.routine.forEach(t => t.done = false);
+            db.completedToday = false;
             saveDB();
+            renderProtocol();
         }
 
         function addRoutineTask() {
@@ -445,33 +487,13 @@
             saveDB();
         }
 
-        function completeProtocol() {
-            const allDone = db.routine.every(t => t.done);
-            if(!allDone) return alert("You must complete all tasks to lock in your streak!");
-            
-            // Success!
-            db.streak++;
-            db.routine.forEach(t => t.done = false); // Reset for next day
-            saveDB();
-            updateTopBar();
-            renderProtocol();
-            
-            // Advance auto-castle view to furthest unlocked
-            let furthest = 0;
-            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
-            castleViewIndex = furthest;
-            renderCastleView();
-            
-            alert("🔥 Protocol Complete! +1 Streak. Come back tomorrow.");
-        }
-
-        // --- 2. ROAD (10 Phases) ---
+        // --- 2. ROAD (Unique Tasks Generator) ---
         function buildRoadTabs() {
             const tabs = document.getElementById('phase-tabs');
             tabs.innerHTML = '';
             for(let i=1; i<=10; i++) {
-                const bg = i === currentPhaseView ? 'bg-brand text-white' : 'bg-white text-slate-500';
-                tabs.innerHTML += `<button onclick="switchPhase(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 whitespace-nowrap">Phase ${i}</button>`;
+                const bg = i === currentPhaseView ? 'bg-brand text-white' : 'bg-white text-slate-500 dark:bg-slate-700 dark:text-slate-300';
+                tabs.innerHTML += `<button onclick="switchPhase(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 dark:border-slate-600 whitespace-nowrap">Phase ${i}</button>`;
             }
         }
 
@@ -479,6 +501,14 @@
             currentPhaseView = p;
             buildRoadTabs();
             renderRoadMap();
+        }
+
+        function generateUniqueTask(level) {
+            const verbs = ["Complete", "Achieve", "Master", "Conquer", "Execute"];
+            const nouns = ["Morning Routine", "Deep Work", "Meditation", "Fitness Goal", "Mindset Shift", "Hydration Target", "Reading Quota"];
+            const v = verbs[level % verbs.length];
+            const n = nouns[level % nouns.length];
+            return `${v} your ${n} Protocol.`;
         }
 
         function renderRoadMap() {
@@ -489,43 +519,40 @@
             const map = document.getElementById('road-map');
             map.innerHTML = '';
             
-            // Generate 25 nodes for this phase
             for(let i=1; i<=25; i++) {
                 let actualLevel = ((currentPhaseView - 1) * 25) + i;
                 let status = actualLevel < db.lvl ? 'completed' : (actualLevel === db.lvl ? 'current' : 'locked');
                 let icon = actualLevel < db.lvl ? '<i class="fa-solid fa-check"></i>' : (actualLevel === db.lvl ? '<i class="fa-solid fa-star"></i>' : actualLevel);
                 
-                // Zig-zag layout
                 let ml = i % 2 === 0 ? 'ml-12' : (i % 3 === 0 ? 'mr-12' : '');
                 
                 map.innerHTML += `<div onclick="openLevelModal(${actualLevel}, '${status}')" class="node ${status} ${ml}">${icon}</div>`;
-                
-                // Vertical connecting line
                 if(i < 25) map.innerHTML += `<div class="w-2 h-10 bg-slate-200 dark:bg-slate-700 ${ml} rounded-full -my-2 z-0"></div>`;
             }
         }
 
         function openLevelModal(lvl, status) {
             modalLevelData = { lvl, status };
-            const pData = ROAD_PHASES[Math.floor((lvl-1)/25)];
-            const taskText = pData.tasks[lvl % pData.tasks.length];
-            
             document.getElementById('modal-title').innerText = `Level ${lvl}`;
-            document.getElementById('modal-desc').innerText = taskText;
+            document.getElementById('modal-desc').innerText = generateUniqueTask(lvl);
             
             const btn = document.getElementById('modal-btn-done');
             if(status === 'locked') {
                 btn.innerText = "Locked";
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                btn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-400');
+                btn.classList.remove('bg-brand');
             } else if(status === 'completed') {
-                btn.innerText = "Already Completed";
-                btn.classList.add('opacity-50');
+                btn.innerText = "Completed";
+                btn.classList.add('opacity-50', 'bg-slate-400');
+                btn.classList.remove('bg-brand');
             } else {
                 btn.innerText = "Complete Task";
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-400');
+                btn.classList.add('bg-brand');
             }
             
             document.getElementById('level-modal').classList.remove('hidden');
+            document.getElementById('level-modal').classList.add('flex');
         }
 
         function beatLevel() {
@@ -534,35 +561,37 @@
             saveDB();
             updateTopBar();
             renderRoadMap();
-            closeModal();
-            alert("Level Up! 🌟");
+            closeLevelModal();
         }
-        function closeModal() { document.getElementById('level-modal').classList.add('hidden'); }
+        function closeLevelModal() { 
+            document.getElementById('level-modal').classList.add('hidden'); 
+            document.getElementById('level-modal').classList.remove('flex');
+        }
 
         // --- 3. JOURNAL ---
         const J_QUESTIONS = {
-            daily: ["What is your main goal today?", "What are you grateful for?", "How will you improve?", "What is a potential obstacle?", "One positive thought?"],
+            daily: ["What is your main goal today?", "What are you grateful for?", "How will you improve?", "Potential obstacle?", "One positive thought?"],
             weekly: ["Biggest win this week?", "What didn't go well?", "What did you learn?", "Focus for next week?", "How was your energy?"],
-            monthly: ["Review your monthly goals.", "Best memory this month?", "Biggest challenge overcome?", "Financial check-in?", "Set intention for next month."]
+            monthly: ["Review monthly goals.", "Best memory?", "Biggest challenge?", "Financial check-in?", "Next month's intention."]
         };
 
         function switchJournal(tab) {
             activeJournalTab = tab;
             ['daily','weekly','monthly'].forEach(t => {
                 document.getElementById(`btn-j-${t}`).classList.remove('bg-brand', 'text-white');
-                document.getElementById(`btn-j-${t}`).classList.add('bg-slate-100', 'text-slate-500');
+                document.getElementById(`btn-j-${t}`).classList.add('bg-slate-100', 'text-slate-500', 'dark:bg-slate-800');
             });
             document.getElementById(`btn-j-${tab}`).classList.add('bg-brand', 'text-white');
-            document.getElementById(`btn-j-${tab}`).classList.remove('bg-slate-100', 'text-slate-500');
+            document.getElementById(`btn-j-${tab}`).classList.remove('bg-slate-100', 'text-slate-500', 'dark:bg-slate-800');
             
             const content = document.getElementById('journal-content');
             content.innerHTML = '';
             
             J_QUESTIONS[tab].forEach((q, i) => {
                 content.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100">
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
                         <label class="font-bold text-brand mb-2 block">${i+1}. ${q}</label>
-                        <textarea id="j-input-${i}" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none font-medium">${db.journal[tab][i]}</textarea>
+                        <textarea id="j-input-${i}" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none font-medium text-slate-700 dark:text-slate-200">${db.journal[tab][i]}</textarea>
                     </div>
                 `;
             });
@@ -581,8 +610,8 @@
             const tabs = document.getElementById('ach-tabs');
             tabs.innerHTML = '';
             ACH_CATEGORIES.forEach((cat, i) => {
-                const bg = i === currentAchCategory ? 'bg-brand text-white' : 'bg-white text-slate-500';
-                tabs.innerHTML += `<button onclick="switchAchCat(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 whitespace-nowrap">${cat}</button>`;
+                const bg = i === currentAchCategory ? 'bg-brand text-white' : 'bg-white text-slate-500 dark:bg-slate-800 dark:text-slate-300';
+                tabs.innerHTML += `<button onclick="switchAchCat(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 dark:border-slate-700 whitespace-nowrap">${cat.emoji} ${cat.name}</button>`;
             });
         }
 
@@ -592,23 +621,29 @@
             renderAchievements();
         }
 
+        function getAchDesc(catName, tier) {
+            if(catName === 'Streaks') return `Reach a ${tier * 5} day streak.`;
+            if(catName === 'Morning') return `Complete protocol ${tier * 10} times.`;
+            return `Unlock Level ${(currentAchCategory * 20) + tier}.`;
+        }
+
         function renderAchievements() {
             const grid = document.getElementById('achievements-grid');
             grid.innerHTML = '';
+            const cat = ACH_CATEGORIES[currentAchCategory];
             
-            // Render 20 achievements per category (20 * 10 = 200 total)
             for(let i=1; i<=20; i++) {
                 let reqLvl = (currentAchCategory * 20) + i;
                 let isUnlocked = db.lvl >= reqLvl;
                 
-                let bgClass = isUnlocked ? 'bg-white dark:bg-slate-800 border-brand border-2 shadow-md' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 border border-dashed opacity-60';
+                let bgClass = isUnlocked ? 'bg-white dark:bg-slate-800 border-brand border-2 shadow-md' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 border opacity-60 grayscale';
                 let iconColor = isUnlocked ? 'text-brand' : 'text-slate-400';
-                let desc = `${ACH_CATEGORIES[currentAchCategory]} Tier ${i}`;
+                let desc = getAchDesc(cat.name, i);
                 
                 grid.innerHTML += `
                     <div class="p-4 rounded-3xl text-center ${bgClass}">
-                        <div class="text-3xl mb-2 ${iconColor}"><i class="fa-solid fa-trophy"></i></div>
-                        <div class="font-black text-sm text-slate-700 dark:text-slate-200">#${reqLvl}</div>
+                        <div class="text-3xl mb-2 ${iconColor}">${cat.emoji}</div>
+                        <div class="font-black text-sm text-slate-700 dark:text-slate-200">${cat.name} Tier ${i}</div>
                         <div class="text-xs font-bold text-slate-500 mt-1">${desc}</div>
                     </div>
                 `;
@@ -619,7 +654,6 @@
         function setupAccount() {
             document.getElementById('acc-name').innerText = db.name;
             document.getElementById('acc-email').innerText = db.email;
-            document.getElementById('acc-pass').value = db.pass;
             document.getElementById('acc-stats').innerText = `Lvl ${db.lvl} • ${db.streak} Streak`;
             document.getElementById('acc-date').innerText = `Joined: ${db.joinDate}`;
             
@@ -630,10 +664,20 @@
             }
         }
 
-        function saveNewPassword() {
-            db.pass = document.getElementById('acc-pass').value;
+        function saveNewPassword(e) {
+            e.preventDefault();
+            const current = document.getElementById('acc-pass-current').value;
+            const newPass = document.getElementById('acc-pass-new').value;
+            
+            if(current !== db.pass) {
+                alert("Current password incorrect!");
+                return;
+            }
+            db.pass = newPass;
             saveDB();
-            alert("Password Updated!");
+            document.getElementById('acc-pass-current').value = '';
+            document.getElementById('acc-pass-new').value = '';
+            alert("Password updated successfully!");
         }
 
         function handleImageUpload(e) {
@@ -666,7 +710,10 @@
             }
         }
 
-        function logout() { location.reload(); }
+        function logout() { 
+            localStorage.removeItem(DB_KEY); // Full reset for demo
+            location.reload(); 
+        }
 
         // --- UTILS ---
         function switchTab(tab) {
