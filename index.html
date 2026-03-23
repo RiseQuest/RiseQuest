@@ -4,67 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RiseQuest | Ascend</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: '#3b82f6', accent: '#facc15' } } } }
     </script>
     <style>
-        body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { font-family: 'Poppins', sans-serif; transition: background-color 0.3s, color 0.3s; overscroll-behavior-y: none; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Animations */
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes bounceGlow { 0%, 100% { filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.4)); transform: translateY(0); } 50% { filter: drop-shadow(0 0 25px rgba(250, 204, 21, 0.8)); transform: translateY(-5px); } }
         .anim-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .anim-slide { animation: slideUp 0.4s ease-out forwards; }
-        
-        /* Task Strikethrough */
-        .task-text { transition: all 0.3s ease; }
-        .task-done { text-decoration: line-through; color: #9ca3af; transform: scale(0.98); }
+        .anim-bounce-glow { animation: bounceGlow 3s infinite; }
         
         /* Duolingo Road */
-        .node { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; cursor: pointer; transition: all 0.2s; border-bottom: 6px solid rgba(0,0,0,0.2); z-index: 10; position: relative;}
-        .node:active { transform: translateY(4px); border-bottom-width: 2px; }
+        .node { width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: transform 0.2s; border-bottom: 8px solid rgba(0,0,0,0.2); position: relative; z-index: 10; margin: 0 auto;}
+        .node:active { transform: translateY(6px); border-bottom-width: 2px; }
         .node.locked { background: #e2e8f0; color: #94a3b8; border-bottom-color: #cbd5e1; }
         .node.current { background: #facc15; color: #854d0e; border-bottom-color: #ca8a04; box-shadow: 0 0 20px rgba(250, 204, 21, 0.5); }
         .node.completed { background: #3b82f6; color: white; border-bottom-color: #2563eb; }
         
-        /* ZigZag layout */
-        .path-row { display: flex; justify-content: center; margin: 15px 0; position: relative; }
-        .path-row:nth-child(4n+1) { transform: translateX(0px); }
-        .path-row:nth-child(4n+2) { transform: translateX(45px); }
-        .path-row:nth-child(4n+3) { transform: translateX(0px); }
-        .path-row:nth-child(4n+4) { transform: translateX(-45px); }
-        
         /* Modals & UI */
-        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-        .dark .glass-nav { background: rgba(15, 23, 42, 0.9); border-color: #334155; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .dark .glass-nav { background: rgba(15, 23, 42, 0.95); border-color: #334155; }
+        .huge-castle { font-size: 8rem; line-height: 1; filter: drop-shadow(0 20px 25px rgba(0,0,0,0.15)); transition: all 0.3s ease; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen hide-scroll">
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
 
     <div id="app" class="max-w-md mx-auto relative pb-24 min-h-screen overflow-x-hidden">
 
         <section id="auth-view" class="p-8 pt-20 flex flex-col justify-center min-h-screen">
             <div class="text-center mb-10 anim-slide">
                 <h1 class="text-5xl font-black text-brand tracking-tighter">RiseQuest</h1>
-                <p class="text-slate-500 dark:text-slate-400 font-semibold mt-2">Level up your life.</p>
+                <p class="text-slate-500 font-semibold mt-2">Level up your life.</p>
             </div>
 
             <div id="signup-box" class="space-y-4 anim-pop">
-                <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 dark:border-slate-700 focus:border-brand outline-none transition">
-                <input id="reg-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 dark:border-slate-700 focus:border-brand outline-none transition">
-                <input id="reg-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 dark:border-slate-700 focus:border-brand outline-none transition">
-                <button onclick="handleAuth('signup')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition active:scale-95">Start Journey</button>
+                <input id="reg-name" type="text" placeholder="Full Name" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <button onclick="handleAuth('signup')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign Up</button>
                 <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Already have an account? <span class="text-brand font-bold">Sign In</span></p>
             </div>
 
             <div id="signin-box" class="space-y-4 hidden anim-pop">
-                <input id="log-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 dark:border-slate-700">
-                <input id="log-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 dark:border-slate-700">
-                <button onclick="handleAuth('signin')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition active:scale-95">Enter Kingdom</button>
+                <input id="log-email" type="email" placeholder="Email Address" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="log-pass" type="password" placeholder="Password" class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <button onclick="handleAuth('signin')" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign In</button>
                 <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Need an account? <span class="text-brand font-bold">Sign Up</span></p>
             </div>
         </section>
@@ -72,36 +65,36 @@
         <section id="onboarding-view" class="hidden p-8 pt-20 min-h-screen flex flex-col justify-center">
             
             <div id="ob-q1" class="anim-slide">
-                <h2 class="text-3xl font-black mb-2 text-center">Do you feel like you're wasting your morning?</h2>
-                <div class="space-y-4 mt-8">
-                    <button onclick="nextOB('yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-left hover:border-brand transition active:scale-95 shadow-sm">
-                        <div class="font-bold text-xl">Yes</div>
-                        <div class="text-slate-500 text-sm">I spend too much time on my phone.</div>
-                    </button>
-                    <button onclick="nextOB('no')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-left hover:border-brand transition active:scale-95 shadow-sm">
-                        <div class="font-bold text-xl">No</div>
-                        <div class="text-slate-500 text-sm">My mornings are usually productive.</div>
-                    </button>
-                    <button onclick="nextOB('idk')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-left hover:border-brand transition active:scale-95 shadow-sm">
-                        <div class="font-bold text-xl">I don't know</div>
-                        <div class="text-slate-500 text-sm">I just need some structure.</div>
-                    </button>
+                <h2 class="text-3xl font-black mb-6 text-center">Do you feel like you're wasting your morning? 🌅</h2>
+                <div class="space-y-4">
+                    <button onclick="nextOB('q1', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">📱</span><div><div class="font-bold text-xl">Yes</div><div class="text-xs text-slate-500">I spend too much time scrolling.</div></div></button>
+                    <button onclick="nextOB('q1', 'no')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">⚡</span><div><div class="font-bold text-xl">No</div><div class="text-xs text-slate-500">My mornings are okay.</div></div></button>
+                    <button onclick="nextOB('q1', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">🤷‍♂️</span><div><div class="font-bold text-xl">I don't know</div><div class="text-xs text-slate-500">I need structure.</div></div></button>
                 </div>
             </div>
 
-            <div id="ob-q2-bad" class="hidden anim-slide">
-                <h2 class="text-3xl font-black mb-8 text-center">How long do you scroll every morning?</h2>
-                <div class="space-y-4" id="scroll-options">
-                    </div>
+            <div id="ob-q2-tired" class="hidden anim-slide">
+                <h2 class="text-3xl font-black mb-6 text-center">Do you get tired during the day? 🥱</h2>
+                <div class="space-y-4">
+                    <button onclick="nextOB('tired', 'yes')" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">📉</span> Yes, I crash</button>
+                    <button onclick="nextOB('tired', 'no')" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">🔋</span> No, I have energy</button>
+                </div>
             </div>
 
-            <div id="ob-q2-good" class="hidden anim-slide">
-                <h2 class="text-3xl font-black mb-2 text-center">Throughout the day, do you feel tired?</h2>
-                <p class="text-slate-500 text-center mb-8">RiseQuest will optimize your energy levels.</p>
+            <div id="ob-q3-better" class="hidden anim-slide">
+                <h2 class="text-3xl font-black mb-6 text-center">Do you want to build a better morning that will change your life? 🚀</h2>
                 <div class="space-y-4">
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 rounded-2xl font-bold text-lg active:scale-95 transition">Yes, I crash in the afternoon.</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 rounded-2xl font-bold text-lg active:scale-95 transition">Sometimes.</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 rounded-2xl font-bold text-lg active:scale-95 transition">No, I have great energy.</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-brand text-white border-2 border-brand rounded-2xl font-bold text-xl active:scale-95 transition shadow-lg text-center">Yes, let's do this! 🔥</button>
+                </div>
+            </div>
+
+            <div id="ob-q4-scroll" class="hidden anim-slide">
+                <h2 class="text-3xl font-black mb-6 text-center">How many hours do you spend on your phone in the morning? ⏱️</h2>
+                <div class="space-y-4">
+                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">None</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">< 1 hour</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">1-2 hours</button>
+                    <button onclick="finishOB()" class="w-full p-5 bg-white border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">3+ hours</button>
                 </div>
             </div>
         </section>
@@ -109,78 +102,98 @@
 
         <div id="main-app" class="hidden">
             
-            <div class="flex justify-between items-center p-6 pb-2 sticky top-0 z-20 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md">
-                <div class="flex items-center space-x-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <i class="fa-solid fa-fire text-orange-500 text-xl"></i>
-                    <span id="ui-streak" class="font-bold text-xl">0</span>
+            <div class="flex justify-between items-center p-6 pb-4 sticky top-0 z-20 glass-nav shadow-sm">
+                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                    <i class="fa-solid fa-fire text-orange-500 text-xl anim-bounce-glow"></i>
+                    <span id="ui-streak" class="font-black text-xl">0</span>
                 </div>
-                <div class="font-black text-brand text-xl tracking-wider">RISEQUEST</div>
-                <div class="flex items-center space-x-3 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <span class="font-bold text-xl text-brand" id="ui-lvl">Lvl 1</span>
+                <div class="font-black text-brand text-2xl tracking-tighter">RISEQUEST</div>
+                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                    <span class="font-black text-xl text-brand" id="ui-lvl">Lvl 1</span>
                 </div>
             </div>
 
             <div id="view-home" class="app-view p-6 pt-2">
+                <div class="text-center mb-10 relative mt-4">
+                    <button onclick="changeCastleView(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-left"></i></button>
+                    
+                    <div id="castle-display" class="huge-castle anim-bounce-glow">🏕️</div>
+                    <h3 id="castle-name" class="text-2xl font-black mt-4">Tent</h3>
+                    <p id="castle-status" class="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Unlocked</p>
+                    
+                    <button onclick="changeCastleView(1)" class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+
+                <div class="flex justify-between items-end mb-4">
+                    <h3 class="font-black text-2xl">Morning Protocol</h3>
+                    <button onclick="toggleEditRoutine()" id="edit-routine-btn" class="text-sm font-bold text-brand bg-blue-50 px-3 py-1 rounded-lg">Edit</button>
+                </div>
                 
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 mb-8 text-center anim-pop">
-                    <div class="flex justify-center items-center space-x-6">
-                        <div>
-                            <div id="castle-icon" class="text-6xl mb-2 drop-shadow-md">🏕️</div>
-                            <div id="castle-name" class="font-bold text-sm">Tent</div>
-                        </div>
-                        <i class="fa-solid fa-arrow-right text-slate-300 dark:text-slate-600 text-2xl"></i>
-                        <div class="opacity-50">
-                            <div id="next-castle-icon" class="text-4xl mb-2">🏚️</div>
-                            <div class="text-xs font-bold text-slate-500"><i class="fa-solid fa-lock text-xs"></i> Lvl <span id="next-castle-req">10</span></div>
-                        </div>
-                    </div>
+                <div id="routine-list" class="space-y-3 pb-4"></div>
+                
+                <button id="add-task-btn" onclick="addRoutineTask()" class="hidden w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold mb-10"><i class="fa-solid fa-plus mr-2"></i>Add Task</button>
+                
+                <button id="complete-protocol-btn" onclick="completeProtocol()" class="w-full bg-brand text-white font-black text-xl py-5 rounded-2xl shadow-[0_10px_20px_rgba(59,130,246,0.3)] active:scale-95 transition flex justify-center items-center mt-6">
+                    COMPLETE PROTOCOL <i class="fa-solid fa-bolt ml-2"></i>
+                </button>
+            </div>
+
+            <div id="view-road" class="app-view hidden text-center">
+                <div class="flex overflow-x-auto hide-scroll space-x-3 p-4 bg-slate-100 dark:bg-slate-800 border-b border-slate-200">
+                    <div id="phase-tabs" class="flex space-x-2"></div>
                 </div>
-
-                <h3 class="font-black text-2xl mb-4">Morning Protocol</h3>
-                <div id="routine-list" class="space-y-3 pb-10">
-                    </div>
-            </div>
-
-            <div id="view-road" class="app-view hidden px-4 pb-10 text-center">
-                <div id="road-map" class="pt-4 flex flex-col items-center">
-                    </div>
-            </div>
-
-            <div id="view-journal" class="app-view hidden p-6">
-                <h2 class="text-3xl font-black mb-6">Your Journal</h2>
-                <div class="space-y-6">
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm">
-                        <h3 class="font-bold text-lg mb-2 text-brand"><i class="fa-solid fa-sun mr-2"></i>Daily</h3>
-                        <textarea placeholder="What do you want to achieve today?" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none"></textarea>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm">
-                        <h3 class="font-bold text-lg mb-2 text-purple-500"><i class="fa-solid fa-calendar-week mr-2"></i>Weekly</h3>
-                        <textarea placeholder="What did you achieve this week?" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none"></textarea>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm">
-                        <h3 class="font-bold text-lg mb-2 text-orange-500"><i class="fa-solid fa-calendar-days mr-2"></i>Monthly (5 Questions)</h3>
-                        <textarea placeholder="Reflect on the past 30 days..." class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-32 outline-none"></textarea>
-                    </div>
+                
+                <div class="p-6">
+                    <h2 id="phase-title" class="text-2xl font-black mb-2 text-brand">Phase 1: Fix the Morning</h2>
+                    <p id="phase-desc" class="text-slate-500 mb-8 font-semibold">Master your wake-up routine.</p>
+                    
+                    <div id="road-map" class="flex flex-col items-center space-y-6 pb-12">
+                        </div>
                 </div>
             </div>
 
-            <div id="view-achievements" class="app-view hidden p-6">
-                <h2 class="text-3xl font-black mb-2">Trophy Room</h2>
-                <p class="text-slate-500 mb-6">200 Milestones to conquer.</p>
-                <div id="achievements-grid" class="grid grid-cols-2 gap-4">
+            <div id="view-journal" class="app-view hidden">
+                <div class="flex justify-center space-x-2 p-4 border-b border-slate-200">
+                    <button onclick="switchJournal('daily')" id="btn-j-daily" class="px-6 py-2 rounded-full font-bold bg-brand text-white transition">Daily</button>
+                    <button onclick="switchJournal('weekly')" id="btn-j-weekly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 transition">Weekly</button>
+                    <button onclick="switchJournal('monthly')" id="btn-j-monthly" class="px-6 py-2 rounded-full font-bold text-slate-500 bg-slate-100 transition">Monthly</button>
+                </div>
+                <div class="p-6 space-y-6" id="journal-content">
                     </div>
+                <div class="p-6 pt-0">
+                    <button onclick="saveJournal()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg">Save Entries</button>
+                </div>
+            </div>
+
+            <div id="view-achievements" class="app-view hidden">
+                <div class="flex overflow-x-auto hide-scroll space-x-2 p-4 border-b border-slate-200" id="ach-tabs"></div>
+                
+                <div class="p-6">
+                    <div id="achievements-grid" class="grid grid-cols-2 gap-4 pb-12">
+                        </div>
+                </div>
             </div>
 
             <div id="view-account" class="app-view hidden p-6">
-                <h2 class="text-3xl font-black mb-6">Settings</h2>
+                <h2 class="text-3xl font-black mb-6">Account</h2>
                 
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mb-6 text-center">
-                    <div class="w-24 h-24 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-4xl mb-4 font-black shadow-lg cursor-pointer" id="profile-pic" onclick="changeAvatar()">👤</div>
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mb-6 text-center border border-slate-100 relative">
+                    <input type="file" id="avatar-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    
+                    <div onclick="document.getElementById('avatar-upload').click()" class="w-28 h-28 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-5xl mb-4 font-black shadow-lg cursor-pointer overflow-hidden border-4 border-white relative group">
+                        <img id="profile-img" src="" class="w-full h-full object-cover hidden">
+                        <span id="profile-emoji">👤</span>
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-camera text-white text-xl"></i>
+                        </div>
+                    </div>
+                    
                     <h3 class="font-black text-2xl" id="acc-name">User</h3>
-                    <p class="text-slate-500" id="acc-date">Joined: Today</p>
+                    <p class="text-slate-500 font-bold text-sm" id="acc-stats">Lvl 1 • 0 Streak</p>
+                    <p class="text-slate-400 text-xs mt-1" id="acc-date">Joined: Today</p>
                 </div>
 
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm space-y-6 border border-slate-100">
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase">Email</label>
                         <div class="font-bold text-lg" id="acc-email">email@test.com</div>
@@ -188,43 +201,40 @@
                     <div>
                         <label class="text-xs font-bold text-slate-400 uppercase">Password</label>
                         <div class="flex items-center justify-between">
-                            <input type="password" id="acc-pass" readonly class="bg-transparent font-bold text-lg outline-none w-1/2" value="********">
-                            <button onclick="togglePassword()" class="text-brand font-bold"><i class="fa-solid fa-eye"></i> Show</button>
+                            <input type="password" id="acc-pass" class="bg-transparent font-bold text-lg outline-none w-2/3 border-b border-slate-200 pb-1" value="********">
+                            <button onclick="saveNewPassword()" class="text-brand font-bold text-sm bg-blue-50 px-3 py-1 rounded-lg">Save</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-6 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm flex justify-between items-center">
+                <div class="mt-6 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm flex justify-between items-center border border-slate-100" onclick="toggleTheme()">
                     <div class="font-bold text-lg"><i class="fa-solid fa-moon text-indigo-500 mr-2"></i> Dark Mode</div>
-                    <button onclick="toggleTheme()" class="w-14 h-8 bg-slate-200 dark:bg-brand rounded-full relative transition-colors duration-300">
+                    <div class="w-14 h-8 bg-slate-200 dark:bg-brand rounded-full relative transition-colors duration-300 pointer-events-none">
                         <div id="theme-knob" class="w-6 h-6 bg-white rounded-full absolute top-1 left-1 shadow-md transition-transform duration-300"></div>
-                    </button>
+                    </div>
                 </div>
                 
-                <button onclick="logout()" class="w-full mt-6 bg-red-100 dark:bg-red-900/30 text-red-500 font-bold py-4 rounded-2xl">Log Out</button>
+                <button onclick="logout()" class="w-full mt-6 bg-red-50 text-red-500 font-black text-lg py-4 rounded-2xl">Log Out</button>
             </div>
         </div>
 
-        <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 glass-nav border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-end z-30 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 glass-nav border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-end z-30">
             <button onclick="switchTab('journal')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-book text-2xl mb-1"></i><span class="text-[10px] font-bold">Journal</span></button>
-            <button onclick="switchTab('road')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-map-location-dot text-2xl mb-1"></i><span class="text-[10px] font-bold">Road</span></button>
-            
+            <button onclick="switchTab('road')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-map text-2xl mb-1"></i><span class="text-[10px] font-bold">Road</span></button>
             <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center -translate-y-4">
-                <div class="w-16 h-16 bg-brand text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-blue-500/40 border-4 border-white dark:border-slate-900 transition hover:scale-105 active:scale-95"><i class="fa-solid fa-house"></i></div>
+                <div class="w-16 h-16 bg-brand text-white rounded-full flex items-center justify-center text-2xl shadow-[0_10px_20px_rgba(59,130,246,0.4)] border-4 border-white dark:border-slate-900 transition active:scale-95"><i class="fa-solid fa-house"></i></div>
             </button>
-            
             <button onclick="switchTab('achievements')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-trophy text-2xl mb-1"></i><span class="text-[10px] font-bold">Trophies</span></button>
             <button onclick="switchTab('account')" class="nav-btn text-slate-400 hover:text-brand flex flex-col items-center transition"><i class="fa-solid fa-user text-2xl mb-1"></i><span class="text-[10px] font-bold">Account</span></button>
         </nav>
 
-        <div id="level-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-            <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-b-4 border-brand">
-                <div class="w-20 h-20 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-3xl font-black mb-4" id="modal-lvl-num">1</div>
-                <h3 class="text-2xl font-black mb-2" id="modal-title">Pushup Mastery</h3>
-                <p class="text-slate-500 dark:text-slate-400 mb-8" id="modal-desc">Complete 20 pushups to conquer this node.</p>
-                <div class="flex space-x-3">
-                    <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-500 dark:text-white">Close</button>
-                    <button onclick="beatLevel()" class="flex-1 py-4 bg-brand text-white font-bold rounded-2xl shadow-lg active:scale-95 transition">Start Task</button>
+        <div id="level-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-t-8 border-brand">
+                <h3 class="text-3xl font-black mb-2" id="modal-title">Phase Task</h3>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg" id="modal-desc">Details here.</p>
+                <div class="flex flex-col space-y-3">
+                    <button id="modal-btn-done" onclick="beatLevel()" class="w-full py-4 bg-brand text-white font-black text-xl rounded-2xl shadow-lg active:scale-95 transition">Complete Task</button>
+                    <button onclick="closeModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-500">Close</button>
                 </div>
             </div>
         </div>
@@ -232,38 +242,67 @@
     </div>
 
     <script>
-        // --- 1. STATE MANAGEMENT ---
-        let db = { name:'', email:'', pass:'', joinDate:'', streak:0, lvl:1, theme:'light', avatar:'👤', routine:[] };
-        const DB_KEY = 'RiseQuest_Data_v2';
-        let currentModalLevel = 1;
+        // --- DATA & STATE ---
+        let db = { 
+            name:'', email:'', pass:'', joinDate:'', streak:0, lvl:1, theme:'light', avatarStr:'', 
+            routine:[{id:1, text:"Wake up at 6 AM", done:false}, {id:2, text:"Drink Water", done:false}, {id:3, text:"Make Bed", done:false}], 
+            journal: { daily:['','','','',''], weekly:['','','','',''], monthly:['','','','',''] }
+        };
+        const DB_KEY = 'RiseQuest_v3_Data';
+        
+        let isEditingRoutine = false;
+        let castleViewIndex = 0;
+        let currentPhaseView = 1;
+        let currentAchCategory = 0;
+        let activeJournalTab = 'daily';
+        let modalLevelData = null;
 
-        // Castle Stages mapping
-        const castles = [
-            { req: 1, icon: '🏕️', name: 'Tent' },
-            { req: 10, icon: '🏚️', name: 'Shack' },
-            { req: 25, icon: '🏡', name: 'Wooden Cabin' },
-            { req: 50, icon: '🏠', name: 'Stone Cottage' },
-            { req: 100, icon: '🏛️', name: 'Fortified Manor' },
-            { req: 150, icon: '🏰', name: 'Grand Castle' },
-            { req: 200, icon: '🏯', name: 'Emperor Fortress' },
-            { req: 250, icon: '💎', name: 'Divine Citadel' }
+        // 15 Castles Setup
+        const CASTLES = [
+            { icon: '🏕️', name: 'Tent', req: {lvl: 1, phase: 1, streak: 0} },
+            { icon: '🏚️', name: 'Shack', req: {lvl: 3, phase: 1, streak: 2} },
+            { icon: '🛖', name: 'Hut', req: {lvl: 5, phase: 1, streak: 5} },
+            { icon: '🏡', name: 'Cabin', req: {lvl: 10, phase: 2, streak: 10} },
+            { icon: '🏠', name: 'House', req: {lvl: 15, phase: 2, streak: 15} },
+            { icon: '🏘️', name: 'Estate', req: {lvl: 20, phase: 3, streak: 20} },
+            { icon: '🏛️', name: 'Manor', req: {lvl: 30, phase: 3, streak: 30} },
+            { icon: '🏦', name: 'Mansion', req: {lvl: 45, phase: 4, streak: 45} },
+            { icon: '🏰', name: 'Castle', req: {lvl: 60, phase: 5, streak: 60} },
+            { icon: '🏯', name: 'Fortress', req: {lvl: 80, phase: 6, streak: 80} },
+            { icon: '🕌', name: 'Palace', req: {lvl: 100, phase: 7, streak: 100} },
+            { icon: '🛕', name: 'Sanctuary', req: {lvl: 125, phase: 8, streak: 125} },
+            { icon: '🏙️', name: 'Metropolis', req: {lvl: 150, phase: 9, streak: 150} },
+            { icon: '🌌', name: 'Astral Keep', req: {lvl: 200, phase: 10, streak: 200} },
+            { icon: '👑', name: 'Divine Citadel', req: {lvl: 250, phase: 10, streak: 250} }
         ];
 
-        // --- 2. INITIALIZATION ---
+        const ROAD_PHASES = [
+            { name: "Fix the Morning", desc: "Build a foundation. Win the morning.", tasks: ["Wake up to first alarm", "Drink 500ml water", "Make your bed"] },
+            { name: "Iron Body", desc: "Physical mastery begins.", tasks: ["20 Pushups", "10 min stretch", "Go for a walk"] },
+            { name: "Clear Mind", desc: "Remove brain fog.", tasks: ["10 min Meditation", "Journal 1 page", "No phone for 1hr"] },
+            { name: "Conquer the Day", desc: "Sustain the energy.", tasks: ["Eat a healthy lunch", "Deep work for 2hrs", "Review goals"] },
+            { name: "Unbreakable", desc: "Hard habits only.", tasks: ["Cold Shower", "Intense Workout", "Read 10 pages"] },
+            { name: "Focus State", desc: "Eliminate distractions.", tasks: ["Delete social media app", "Screen time < 2hrs", "Plan tomorrow tonight"] },
+            { name: "The Vision", desc: "Start building the dream.", tasks: ["Research business idea", "Listen to educational podcast", "Connect with a mentor"] },
+            { name: "Execution", desc: "Put in the work.", tasks: ["Work on side hustle 1hr", "Publish content", "Track finances"] },
+            { name: "Empire", desc: "Scale your life.", tasks: ["Launch project", "Read a business book", "Invest money"] },
+            { name: "Mastery", desc: "The ultimate peak.", tasks: ["Teach someone else", "Perfect week execution", "Reflect on journey"] }
+        ];
+
+        const ACH_CATEGORIES = ['Streaks', 'Morning', 'Fitness', 'Mindset', 'Focus', 'Wealth', 'Business', 'Learning', 'Zen', 'Mastery'];
+
+        // --- INIT ---
         window.onload = () => {
-            const saved = localStorage.getItem(DB_KEY);
-            if(saved) {
-                db = JSON.parse(saved);
+            if(localStorage.getItem(DB_KEY)) {
+                db = JSON.parse(localStorage.getItem(DB_KEY));
                 applyTheme();
                 initApp();
-            } else {
-                // Not logged in, stay on Auth view
             }
         };
 
         function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
-        // --- 3. AUTHENTICATION ---
+        // --- AUTH & ONBOARDING ---
         function toggleAuth() {
             document.getElementById('signup-box').classList.toggle('hidden');
             document.getElementById('signin-box').classList.toggle('hidden');
@@ -275,259 +314,344 @@
                 db.email = document.getElementById('reg-email').value;
                 db.pass = document.getElementById('reg-pass').value;
                 db.joinDate = new Date().toLocaleDateString();
-                if(!db.email.includes('@') || !db.pass) return alert("Enter valid details.");
+                if(!db.email || !db.pass) return alert("Fill fields.");
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('onboarding-view').classList.remove('hidden');
             } else {
-                // Sign in logic
                 const em = document.getElementById('log-email').value;
                 const pa = document.getElementById('log-pass').value;
-                const saved = JSON.parse(localStorage.getItem(DB_KEY));
-                if(saved && saved.email === em && saved.pass === pa) {
-                    db = saved;
-                    applyTheme();
+                if(em === db.email && pa === db.pass || localStorage.getItem(DB_KEY)) {
                     initApp();
-                } else { alert("Incorrect Email or Password."); }
-            }
-            saveDB();
-        }
-
-        function logout() {
-            // Keep data in localstorage, just reload to auth screen
-            location.reload();
-        }
-
-        // --- 4. ONBOARDING ENGINE ---
-        function nextOB(ans) {
-            document.getElementById('ob-q1').classList.add('hidden');
-            if(ans === 'no') {
-                document.getElementById('ob-q2-good').classList.remove('hidden');
-            } else {
-                document.getElementById('ob-q2-bad').classList.remove('hidden');
-                const opts = ['< 1 hour', '1-2 hours', '2-3 hours', '3+ hours'];
-                const box = document.getElementById('scroll-options');
-                box.innerHTML = '';
-                opts.forEach(o => {
-                    box.innerHTML += `<button onclick="finishOB('${o}')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-lg hover:border-brand active:scale-95 transition text-left">${o}</button>`;
-                });
+                } else { alert("Invalid login"); }
             }
         }
 
-        function finishOB(scrollTime = '') {
-            // Build Routine based on input
-            db.routine = [
-                { id: 1, text: "Wake up immediately", done: false },
-                { id: 2, text: "Drink 500ml Water", done: false },
-                { id: 3, text: "20 Pushups", done: false },
-                { id: 4, text: "10 mins Sunlight", done: false }
-            ];
-            if(scrollTime.includes('2') || scrollTime.includes('3')) {
-                db.routine.push({ id: 5, text: "Zero Phone first hour", done: false });
+        function nextOB(current, ans) {
+            document.getElementById(`ob-${current}`).classList.add('hidden');
+            if(current === 'q1') {
+                if(ans === 'no') document.getElementById('ob-q2-tired').classList.remove('hidden');
+                else document.getElementById('ob-q4-scroll').classList.remove('hidden');
+            } else if(current === 'tired') {
+                if(ans === 'yes') document.getElementById('ob-q4-scroll').classList.remove('hidden');
+                else document.getElementById('ob-q3-better').classList.remove('hidden');
             }
+        }
+
+        function finishOB() {
             saveDB();
             document.getElementById('onboarding-view').classList.add('hidden');
             initApp();
         }
 
-        // --- 5. MAIN APP RENDERER ---
+        // --- CORE UI ---
         function initApp() {
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('bottom-nav').classList.remove('hidden');
             
-            updateUI();
-            renderRoutine();
-            buildRoad();
-            buildAchievements();
+            updateTopBar();
+            renderCastleView();
+            renderProtocol();
+            buildRoadTabs();
+            renderRoadMap();
+            buildAchTabs();
+            renderAchievements();
+            switchJournal('daily');
+            setupAccount();
             switchTab('home');
         }
 
-        function updateUI() {
+        function updateTopBar() {
             document.getElementById('ui-streak').innerText = db.streak;
             document.getElementById('ui-lvl').innerText = `Lvl ${db.lvl}`;
-            
-            // Account info
-            document.getElementById('acc-name').innerText = db.name;
-            document.getElementById('acc-email').innerText = db.email;
-            document.getElementById('acc-pass').value = db.pass;
-            document.getElementById('acc-date').innerText = `Joined: ${db.joinDate}`;
-            document.getElementById('profile-pic').innerText = db.avatar;
-
-            // Castle Logic
-            let current = castles[0];
-            let next = castles[1];
-            for(let i=0; i<castles.length; i++) {
-                if(db.lvl >= castles[i].req) {
-                    current = castles[i];
-                    next = castles[i+1] || { req: 'MAX', icon: '✨', name: 'Maxed' };
-                }
-            }
-            document.getElementById('castle-icon').innerText = current.icon;
-            document.getElementById('castle-name').innerText = current.name;
-            document.getElementById('next-castle-icon').innerText = next.icon;
-            document.getElementById('next-castle-req').innerText = next.req;
         }
 
-        // --- 6. ROUTINE (EDITABLE TASKS) ---
-        function renderRoutine() {
+        // --- 1. HOME: CASTLE ---
+        function changeCastleView(dir) {
+            castleViewIndex += dir;
+            if(castleViewIndex < 0) castleViewIndex = 0;
+            if(castleViewIndex > 14) castleViewIndex = 14;
+            renderCastleView();
+        }
+
+        function renderCastleView() {
+            const c = CASTLES[castleViewIndex];
+            document.getElementById('castle-display').innerText = c.icon;
+            document.getElementById('castle-name').innerText = c.name;
+            
+            const isUnlocked = db.lvl >= c.req.lvl && db.streak >= c.req.streak; // Simplified check
+            
+            if(isUnlocked) {
+                document.getElementById('castle-status').innerHTML = `<span class="text-green-500"><i class="fa-solid fa-unlock text-xs"></i> Unlocked</span>`;
+                document.getElementById('castle-display').style.filter = 'drop-shadow(0 0 20px rgba(250, 204, 21, 0.6))';
+            } else {
+                document.getElementById('castle-status').innerHTML = `<i class="fa-solid fa-lock text-xs"></i> Req: Lvl ${c.req.lvl} | Streak ${c.req.streak} | Phase ${c.req.phase}`;
+                document.getElementById('castle-display').style.filter = 'grayscale(100%) opacity(50%)';
+            }
+        }
+
+        // --- 1. HOME: PROTOCOL (Checklist) ---
+        function toggleEditRoutine() {
+            isEditingRoutine = !isEditingRoutine;
+            document.getElementById('edit-routine-btn').innerText = isEditingRoutine ? "Done" : "Edit";
+            document.getElementById('add-task-btn').classList.toggle('hidden');
+            document.getElementById('complete-protocol-btn').classList.toggle('hidden');
+            renderProtocol();
+        }
+
+        function renderProtocol() {
             const list = document.getElementById('routine-list');
             list.innerHTML = '';
             
-            // Sort to put done items at bottom
-            const sorted = [...db.routine].sort((a,b) => (a.done === b.done)? 0 : a.done ? 1 : -1);
-
-            sorted.forEach(t => {
-                const strikeClass = t.done ? 'task-done' : '';
-                const checkColor = t.done ? 'bg-green-500 text-white border-green-500' : 'bg-transparent border-slate-300 dark:border-slate-600 text-transparent';
-                
-                list.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center shadow-sm border border-slate-100 dark:border-slate-700 transition-all ${strikeClass}" id="task-${t.id}">
-                        <button onclick="toggleTask(${t.id})" class="w-8 h-8 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${checkColor}">
-                            <i class="fa-solid fa-check text-sm"></i>
-                        </button>
-                        <div class="flex-1 task-text">
-                            <span contenteditable="true" onblur="editTask(${t.id}, this.innerText)" class="outline-none block w-full">${t.text}</span>
+            db.routine.forEach((t, index) => {
+                if(isEditingRoutine) {
+                    list.innerHTML += `
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center shadow-sm border border-slate-200">
+                            <button onclick="deleteRoutineTask(${t.id})" class="text-red-500 mr-4"><i class="fa-solid fa-trash"></i></button>
+                            <input type="text" value="${t.text}" onblur="updateRoutineText(${t.id}, this.value)" class="flex-1 bg-transparent font-bold outline-none border-b border-slate-300">
+                            <i class="fa-solid fa-pencil text-slate-300 ml-2"></i>
                         </div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    const icon = t.done ? '<i class="fa-solid fa-circle-check text-green-500 text-2xl"></i>' : '<i class="fa-regular fa-circle text-slate-300 text-2xl"></i>';
+                    const strike = t.done ? 'line-through text-slate-400' : 'font-bold';
+                    list.innerHTML += `
+                        <div onclick="toggleProtocolTask(${t.id})" class="bg-white dark:bg-slate-800 p-5 rounded-2xl flex items-center shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition">
+                            <div class="mr-4">${icon}</div>
+                            <span class="text-lg ${strike}">${t.text}</span>
+                        </div>
+                    `;
+                }
             });
         }
 
-        function toggleTask(id) {
-            const task = db.routine.find(t => t.id === id);
-            task.done = !task.done;
-            if(task.done) {
-                // If checking off, increase streak and level slightly as reward
-                db.streak++;
-                saveDB();
-            } else {
-                db.streak = Math.max(0, db.streak - 1);
+        function toggleProtocolTask(id) {
+            const t = db.routine.find(x => x.id === id);
+            t.done = !t.done;
+            renderProtocol();
+            saveDB();
+        }
+
+        function addRoutineTask() {
+            db.routine.push({ id: Date.now(), text: "New Habit", done: false });
+            renderProtocol();
+        }
+        function deleteRoutineTask(id) {
+            db.routine = db.routine.filter(x => x.id !== id);
+            renderProtocol();
+        }
+        function updateRoutineText(id, val) {
+            db.routine.find(x => x.id === id).text = val;
+            saveDB();
+        }
+
+        function completeProtocol() {
+            const allDone = db.routine.every(t => t.done);
+            if(!allDone) return alert("You must complete all tasks to lock in your streak!");
+            
+            // Success!
+            db.streak++;
+            db.routine.forEach(t => t.done = false); // Reset for next day
+            saveDB();
+            updateTopBar();
+            renderProtocol();
+            
+            // Advance auto-castle view to furthest unlocked
+            let furthest = 0;
+            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
+            castleViewIndex = furthest;
+            renderCastleView();
+            
+            alert("🔥 Protocol Complete! +1 Streak. Come back tomorrow.");
+        }
+
+        // --- 2. ROAD (10 Phases) ---
+        function buildRoadTabs() {
+            const tabs = document.getElementById('phase-tabs');
+            tabs.innerHTML = '';
+            for(let i=1; i<=10; i++) {
+                const bg = i === currentPhaseView ? 'bg-brand text-white' : 'bg-white text-slate-500';
+                tabs.innerHTML += `<button onclick="switchPhase(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 whitespace-nowrap">Phase ${i}</button>`;
             }
-            updateUI();
-            renderRoutine();
-            saveDB();
         }
 
-        function editTask(id, newText) {
-            const task = db.routine.find(t => t.id === id);
-            task.text = newText;
-            saveDB();
+        function switchPhase(p) {
+            currentPhaseView = p;
+            buildRoadTabs();
+            renderRoadMap();
         }
 
-        // --- 7. DUOLINGO ROAD GENERATOR (250 Levels, 10 Phases) ---
-        function buildRoad() {
+        function renderRoadMap() {
+            const pData = ROAD_PHASES[currentPhaseView-1];
+            document.getElementById('phase-title').innerText = `Phase ${currentPhaseView}: ${pData.name}`;
+            document.getElementById('phase-desc').innerText = pData.desc;
+            
             const map = document.getElementById('road-map');
             map.innerHTML = '';
-            const phaseThemes = ['The Awakening', 'Iron Will', 'Discipline', 'Momentum', 'Warrior', 'Mastery', 'Zen', 'Ascension', 'Elite', 'Divine'];
             
-            let html = '';
-            let currentLevel = 1;
-
-            for(let p=0; p<10; p++) {
-                // Phase Header
-                html += `
-                    <div class="w-full text-center my-10 relative">
-                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t-2 border-slate-200 dark:border-slate-700 border-dashed"></div></div>
-                        <span class="relative bg-slate-50 dark:bg-slate-900 px-4 font-black text-brand text-xl uppercase tracking-widest">Phase ${p+1}: ${phaseThemes[p]}</span>
-                    </div>
-                `;
-
-                // 25 Levels per Phase
-                for(let l=0; l<25; l++) {
-                    let status = currentLevel < db.lvl ? 'completed' : (currentLevel === db.lvl ? 'current' : 'locked');
-                    let icon = currentLevel < db.lvl ? '<i class="fa-solid fa-check text-2xl"></i>' : (currentLevel === db.lvl ? '<i class="fa-solid fa-star text-2xl"></i>' : currentLevel);
-                    
-                    html += `
-                        <div class="path-row w-full flex justify-center">
-                            <div class="node ${status}" onclick="openLevelModal(${currentLevel}, '${status}')">
-                                ${icon}
-                            </div>
-                        </div>
-                    `;
-                    // Connector logic omitted to save space, nodes overlap visually via css
-                    currentLevel++;
-                }
+            // Generate 25 nodes for this phase
+            for(let i=1; i<=25; i++) {
+                let actualLevel = ((currentPhaseView - 1) * 25) + i;
+                let status = actualLevel < db.lvl ? 'completed' : (actualLevel === db.lvl ? 'current' : 'locked');
+                let icon = actualLevel < db.lvl ? '<i class="fa-solid fa-check"></i>' : (actualLevel === db.lvl ? '<i class="fa-solid fa-star"></i>' : actualLevel);
+                
+                // Zig-zag layout
+                let ml = i % 2 === 0 ? 'ml-12' : (i % 3 === 0 ? 'mr-12' : '');
+                
+                map.innerHTML += `<div onclick="openLevelModal(${actualLevel}, '${status}')" class="node ${status} ${ml}">${icon}</div>`;
+                
+                // Vertical connecting line
+                if(i < 25) map.innerHTML += `<div class="w-2 h-10 bg-slate-200 dark:bg-slate-700 ${ml} rounded-full -my-2 z-0"></div>`;
             }
-            map.innerHTML = html;
         }
 
         function openLevelModal(lvl, status) {
-            if(status === 'locked') return; // Can't open locked
-            currentModalLevel = lvl;
-            document.getElementById('modal-lvl-num').innerText = lvl;
-            document.getElementById('modal-title').innerText = `Quest Level ${lvl}`;
-            // Procedural generation of tasks based on level
-            const tasks = ["Do 20 Pushups", "Run 1 Mile", "Read 10 Pages", "Cold Shower", "Meditate 10 mins"];
-            document.getElementById('modal-desc').innerText = "Mission: " + tasks[lvl % tasks.length];
+            modalLevelData = { lvl, status };
+            const pData = ROAD_PHASES[Math.floor((lvl-1)/25)];
+            const taskText = pData.tasks[lvl % pData.tasks.length];
+            
+            document.getElementById('modal-title').innerText = `Level ${lvl}`;
+            document.getElementById('modal-desc').innerText = taskText;
+            
+            const btn = document.getElementById('modal-btn-done');
+            if(status === 'locked') {
+                btn.innerText = "Locked";
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else if(status === 'completed') {
+                btn.innerText = "Already Completed";
+                btn.classList.add('opacity-50');
+            } else {
+                btn.innerText = "Complete Task";
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
             
             document.getElementById('level-modal').classList.remove('hidden');
-            document.getElementById('level-modal').classList.add('flex');
-        }
-
-        function closeModal() {
-            document.getElementById('level-modal').classList.add('hidden');
-            document.getElementById('level-modal').classList.remove('flex');
         }
 
         function beatLevel() {
-            if(currentModalLevel === db.lvl) {
-                db.lvl++;
-                updateUI();
-                buildRoad();
-                saveDB();
-            }
+            if(!modalLevelData || modalLevelData.status !== 'current') return;
+            db.lvl++;
+            saveDB();
+            updateTopBar();
+            renderRoadMap();
             closeModal();
-            alert("Quest Complete! Level Up!");
+            alert("Level Up! 🌟");
+        }
+        function closeModal() { document.getElementById('level-modal').classList.add('hidden'); }
+
+        // --- 3. JOURNAL ---
+        const J_QUESTIONS = {
+            daily: ["What is your main goal today?", "What are you grateful for?", "How will you improve?", "What is a potential obstacle?", "One positive thought?"],
+            weekly: ["Biggest win this week?", "What didn't go well?", "What did you learn?", "Focus for next week?", "How was your energy?"],
+            monthly: ["Review your monthly goals.", "Best memory this month?", "Biggest challenge overcome?", "Financial check-in?", "Set intention for next month."]
+        };
+
+        function switchJournal(tab) {
+            activeJournalTab = tab;
+            ['daily','weekly','monthly'].forEach(t => {
+                document.getElementById(`btn-j-${t}`).classList.remove('bg-brand', 'text-white');
+                document.getElementById(`btn-j-${t}`).classList.add('bg-slate-100', 'text-slate-500');
+            });
+            document.getElementById(`btn-j-${tab}`).classList.add('bg-brand', 'text-white');
+            document.getElementById(`btn-j-${tab}`).classList.remove('bg-slate-100', 'text-slate-500');
+            
+            const content = document.getElementById('journal-content');
+            content.innerHTML = '';
+            
+            J_QUESTIONS[tab].forEach((q, i) => {
+                content.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100">
+                        <label class="font-bold text-brand mb-2 block">${i+1}. ${q}</label>
+                        <textarea id="j-input-${i}" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none font-medium">${db.journal[tab][i]}</textarea>
+                    </div>
+                `;
+            });
         }
 
-        // --- 8. ACHIEVEMENTS GENERATOR (200 Trophies) ---
-        function buildAchievements() {
-            const grid = document.getElementById('achievements-grid');
-            let html = '';
-            const categories = [
-                {icon: '🔥', color: 'text-orange-500', name: 'Streaks'},
-                {icon: '💪', color: 'text-blue-500', name: 'Fitness'},
-                {icon: '🧠', color: 'text-purple-500', name: 'Mindset'},
-                {icon: '📚', color: 'text-green-500', name: 'Knowledge'}
-            ];
+        function saveJournal() {
+            for(let i=0; i<5; i++) {
+                db.journal[activeJournalTab][i] = document.getElementById(`j-input-${i}`).value;
+            }
+            saveDB();
+            alert("Journal saved!");
+        }
 
-            // Generate 200 items efficiently
-            for(let i=1; i<=200; i++) {
-                let cat = categories[i % categories.length];
-                let isUnlocked = db.lvl >= i; // Unlock condition tied to level
-                let bgClass = isUnlocked ? 'bg-white dark:bg-slate-800 border-brand border-2' : 'bg-slate-100 dark:bg-slate-800 opacity-50 grayscale';
+        // --- 4. ACHIEVEMENTS ---
+        function buildAchTabs() {
+            const tabs = document.getElementById('ach-tabs');
+            tabs.innerHTML = '';
+            ACH_CATEGORIES.forEach((cat, i) => {
+                const bg = i === currentAchCategory ? 'bg-brand text-white' : 'bg-white text-slate-500';
+                tabs.innerHTML += `<button onclick="switchAchCat(${i})" class="px-5 py-2 rounded-full font-black ${bg} shadow-sm border border-slate-200 whitespace-nowrap">${cat}</button>`;
+            });
+        }
+
+        function switchAchCat(i) {
+            currentAchCategory = i;
+            buildAchTabs();
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievements-grid');
+            grid.innerHTML = '';
+            
+            // Render 20 achievements per category (20 * 10 = 200 total)
+            for(let i=1; i<=20; i++) {
+                let reqLvl = (currentAchCategory * 20) + i;
+                let isUnlocked = db.lvl >= reqLvl;
                 
-                html += `
-                    <div class="p-4 rounded-3xl text-center shadow-sm ${bgClass}">
-                        <div class="text-3xl mb-2 ${cat.color}">${cat.icon}</div>
-                        <div class="font-bold text-xs">Achievement #${i}</div>
-                        <div class="text-[10px] text-slate-500 mt-1">${cat.name} Mastery</div>
+                let bgClass = isUnlocked ? 'bg-white dark:bg-slate-800 border-brand border-2 shadow-md' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 border border-dashed opacity-60';
+                let iconColor = isUnlocked ? 'text-brand' : 'text-slate-400';
+                let desc = `${ACH_CATEGORIES[currentAchCategory]} Tier ${i}`;
+                
+                grid.innerHTML += `
+                    <div class="p-4 rounded-3xl text-center ${bgClass}">
+                        <div class="text-3xl mb-2 ${iconColor}"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="font-black text-sm text-slate-700 dark:text-slate-200">#${reqLvl}</div>
+                        <div class="text-xs font-bold text-slate-500 mt-1">${desc}</div>
                     </div>
                 `;
             }
-            grid.innerHTML = html;
         }
 
-
-        // --- 9. UTILITIES & NAVIGATION ---
-        function switchTab(tab) {
-            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
-            document.getElementById(`view-${tab}`).classList.remove('hidden');
+        // --- 5. ACCOUNT ---
+        function setupAccount() {
+            document.getElementById('acc-name').innerText = db.name;
+            document.getElementById('acc-email').innerText = db.email;
+            document.getElementById('acc-pass').value = db.pass;
+            document.getElementById('acc-stats').innerText = `Lvl ${db.lvl} • ${db.streak} Streak`;
+            document.getElementById('acc-date').innerText = `Joined: ${db.joinDate}`;
             
-            // Highlight nav icons
-            document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.remove('text-brand');
-                if(!b.innerHTML.includes('bg-brand')) b.classList.add('text-slate-400');
-            });
-            event.currentTarget.classList.remove('text-slate-400');
-            event.currentTarget.classList.add('text-brand');
-            window.scrollTo(0,0);
+            if(db.avatarStr) {
+                document.getElementById('profile-img').src = db.avatarStr;
+                document.getElementById('profile-img').classList.remove('hidden');
+                document.getElementById('profile-emoji').classList.add('hidden');
+            }
+        }
+
+        function saveNewPassword() {
+            db.pass = document.getElementById('acc-pass').value;
+            saveDB();
+            alert("Password Updated!");
+        }
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                db.avatarStr = event.target.result;
+                saveDB();
+                setupAccount();
+            };
+            reader.readAsDataURL(file);
         }
 
         function toggleTheme() {
             db.theme = db.theme === 'light' ? 'dark' : 'light';
-            applyTheme();
             saveDB();
+            applyTheme();
         }
 
         function applyTheme() {
@@ -542,19 +666,21 @@
             }
         }
 
-        function togglePassword() {
-            const input = document.getElementById('acc-pass');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
+        function logout() { location.reload(); }
 
-        function changeAvatar() {
-            const emojis = ['👤', '🦁', '🚀', '👑', '🦅', '🐺'];
-            let current = emojis.indexOf(db.avatar);
-            db.avatar = emojis[(current + 1) % emojis.length];
-            document.getElementById('profile-pic').innerText = db.avatar;
-            saveDB();
+        // --- UTILS ---
+        function switchTab(tab) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('text-brand');
+                if(!b.innerHTML.includes('bg-brand')) b.classList.add('text-slate-400');
+            });
+            event.currentTarget.classList.remove('text-slate-400');
+            event.currentTarget.classList.add('text-brand');
+            window.scrollTo(0,0);
         }
-
     </script>
 </body>
 </html>
