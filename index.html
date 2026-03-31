@@ -18,9 +18,13 @@
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes bounceGlow { 0%, 100% { filter: drop-shadow(0 0 15px rgba(250, 204, 21, 0.4)); transform: translateY(0); } 50% { filter: drop-shadow(0 0 25px rgba(250, 204, 21, 0.8)); transform: translateY(-5px); } }
+        @keyframes slideInRight { 0% { transform: translateX(100%); opacity: 0; } 10% { transform: translateX(0); opacity: 1; } 90% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(100%); opacity: 0; } }
+        
         .anim-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .anim-slide { animation: slideUp 0.4s ease-out forwards; }
         .anim-bounce-glow { animation: bounceGlow 3s infinite; }
+        
+        .toast { animation: slideInRight 4s ease-in-out forwards; }
         
         .node { width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: transform 0.2s; border-bottom: 8px solid rgba(0,0,0,0.2); position: relative; z-index: 10; margin: 0 auto;}
         .node:active { transform: translateY(6px); border-bottom-width: 2px; }
@@ -31,11 +35,20 @@
         .glass-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .dark .glass-nav { background: rgba(15, 23, 42, 0.95); border-color: #334155; }
         .huge-castle { font-size: 8rem; line-height: 1; transition: all 0.3s ease; display: inline-block; }
-        .locked-castle { filter: brightness(0) invert(0.2); opacity: 0.8; }
-        .dark .locked-castle { filter: brightness(0) invert(0.8); }
+        
+        /* Fully black silhouette for locked houses */
+        .locked-castle { filter: brightness(0); opacity: 0.8; }
+        .dark .locked-castle { filter: brightness(0) invert(0.2); }
+        
+        /* Progress Bar */
+        .xp-bar-container { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .dark .xp-bar-container { background: #334155; }
+        .xp-bar-fill { height: 100%; background: #3b82f6; transition: width 0.5s ease-out; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen">
+
+    <div id="toast-container" class="fixed top-24 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
     <div id="app" class="max-w-md mx-auto relative pb-24 min-h-screen overflow-x-hidden">
 
@@ -44,79 +57,45 @@
                 <h1 class="text-5xl font-black text-brand tracking-tighter">RiseQuest</h1>
                 <p class="text-slate-500 font-semibold mt-2">Level up your life.</p>
             </div>
-
-            <form id="login-form" onsubmit="handleAuth(event, 'signin')" class="space-y-4 anim-pop hidden">
-                <input id="log-email" type="email" autocomplete="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="log-pass" type="password" autocomplete="current-password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <button type="submit" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign In</button>
-                <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Need an account? <span class="text-brand font-bold">Sign Up</span></p>
-            </form>
-
             <form id="signup-form" onsubmit="handleAuth(event, 'signup')" class="space-y-4 anim-pop">
-                <input id="reg-name" type="text" autocomplete="name" placeholder="Full Name" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="reg-email" type="email" autocomplete="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
-                <input id="reg-pass" type="password" autocomplete="new-password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-name" type="text" placeholder="Full Name" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-email" type="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="reg-pass" type="password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
                 <button type="submit" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign Up</button>
                 <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Already have an account? <span class="text-brand font-bold">Sign In</span></p>
             </form>
-        </section>
-
-        <section id="onboarding-view" class="hidden p-8 pt-20 min-h-screen flex flex-col justify-center">
-             <div id="ob-q1" class="anim-slide">
-                <h2 class="text-3xl font-black mb-6 text-center">Do you feel like you're wasting your morning? 🌅</h2>
-                <div class="space-y-4">
-                    <button onclick="nextOB('q1', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">📱</span><div><div class="font-bold text-xl">Yes</div><div class="text-xs text-slate-500">I spend too much time scrolling.</div></div></button>
-                    <button onclick="nextOB('q1', 'no')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">⚡</span><div><div class="font-bold text-xl">No</div><div class="text-xs text-slate-500">My mornings are okay.</div></div></button>
-                    <button onclick="nextOB('q1', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl text-left shadow-sm active:scale-95 transition flex items-center"><span class="text-3xl mr-4">🤷‍♂️</span><div><div class="font-bold text-xl">I don't know</div><div class="text-xs text-slate-500">I need structure.</div></div></button>
-                </div>
-            </div>
-
-            <div id="ob-q2-tired" class="hidden anim-slide">
-                <h2 class="text-3xl font-black mb-6 text-center">Do you get tired during the day? 🥱</h2>
-                <div class="space-y-4">
-                    <button onclick="nextOB('tired', 'yes')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">📉</span> Yes, I crash</button>
-                    <button onclick="nextOB('tired', 'no')" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left"><span class="mr-2">🔋</span> No, I have energy</button>
-                </div>
-            </div>
-
-            <div id="ob-q3-better" class="hidden anim-slide">
-                <h2 class="text-3xl font-black mb-6 text-center">Do you want to build a better morning that will change your life? 🚀</h2>
-                <div class="space-y-4">
-                    <button onclick="finishOB()" class="w-full p-5 bg-brand text-white border-2 border-brand rounded-2xl font-bold text-xl active:scale-95 transition shadow-lg text-center">Yes, let's do this! 🔥</button>
-                </div>
-            </div>
-
-            <div id="ob-q4-scroll" class="hidden anim-slide">
-                <h2 class="text-3xl font-black mb-6 text-center">How many hours do you spend on your phone in the morning? ⏱️</h2>
-                <div class="space-y-4">
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">None</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">< 1 hour</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">1-2 hours</button>
-                    <button onclick="finishOB()" class="w-full p-5 bg-white dark:bg-slate-800 border-2 rounded-2xl font-bold text-lg active:scale-95 transition shadow-sm text-left">3+ hours</button>
-                </div>
-            </div>
+            <form id="login-form" onsubmit="handleAuth(event, 'signin')" class="space-y-4 anim-pop hidden">
+                <input id="log-email" type="email" placeholder="Email Address" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <input id="log-pass" type="password" placeholder="Password" required class="w-full p-4 rounded-2xl border-2 border-slate-200 dark:bg-slate-800 focus:border-brand outline-none">
+                <button type="submit" class="w-full bg-brand text-white font-bold text-lg py-4 rounded-2xl shadow-lg active:scale-95 transition">Sign In</button>
+                <p class="text-center text-sm text-slate-500 mt-4 cursor-pointer" onclick="toggleAuth()">Need an account? <span class="text-brand font-bold">Sign Up</span></p>
+            </form>
         </section>
 
         <div id="main-app" class="hidden">
             
-            <div class="flex justify-between items-center p-6 pb-4 sticky top-0 z-20 glass-nav shadow-sm border-b border-slate-200 dark:border-slate-800">
-                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <i class="fa-solid fa-fire text-orange-500 text-xl anim-bounce-glow"></i>
-                    <span id="ui-streak" class="font-black text-xl">0</span>
+            <div class="flex justify-between items-center p-4 sticky top-0 z-20 glass-nav shadow-sm border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <i class="fa-solid fa-fire text-orange-500 text-lg anim-bounce-glow"></i>
+                    <span id="ui-streak" class="font-black text-lg">0</span>
                 </div>
-                <div class="font-black text-brand text-2xl tracking-tighter">RISEQUEST</div>
-                <div class="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <span class="font-black text-xl text-brand" id="ui-lvl">Lvl 1</span>
+                <div class="font-black text-brand text-2xl tracking-tighter text-center">RISEQUEST</div>
+                <div class="flex flex-col items-end bg-white dark:bg-slate-800 px-3 py-1 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 w-28">
+                    <div class="w-full flex justify-between items-end">
+                        <span class="font-black text-md text-brand" id="ui-lvl">Lvl 1</span>
+                        <span class="text-[10px] font-bold text-slate-400" id="ui-xp-text">0/50</span>
+                    </div>
+                    <div class="xp-bar-container"><div id="ui-xp-bar" class="xp-bar-fill" style="width: 0%;"></div></div>
                 </div>
             </div>
 
             <div id="view-home" class="app-view p-6 pt-2">
-                <div class="text-center mb-10 relative mt-4 h-48 flex flex-col items-center justify-center">
+                <div class="text-center mb-8 relative mt-4 h-48 flex flex-col items-center justify-center">
                     <button onclick="changeCastleView(-1)" class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-md z-10 flex items-center justify-center text-slate-400 hover:text-brand"><i class="fa-solid fa-chevron-left"></i></button>
                     
                     <div id="castle-display-container" class="relative">
                         <div id="castle-display" class="huge-castle anim-bounce-glow">🏕️</div>
-                        <div id="castle-lock-icon" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-slate-400 drop-shadow-lg"><i class="fa-solid fa-lock"></i></div>
+                        <div id="castle-lock-icon" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-white drop-shadow-md"><i class="fa-solid fa-lock"></i></div>
                     </div>
 
                     <h3 id="castle-name" class="text-2xl font-black mt-4">Tent</h3>
@@ -131,7 +110,6 @@
                 </div>
                 
                 <div id="routine-list" class="space-y-3 pb-4"></div>
-                
                 <button id="add-task-btn" onclick="addRoutineTask()" class="hidden w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl text-slate-500 font-bold mb-10"><i class="fa-solid fa-plus mr-2"></i>Add Task</button>
             </div>
 
@@ -140,7 +118,7 @@
                     <div id="phase-tabs" class="flex space-x-2"></div>
                 </div>
                 <div class="p-6">
-                    <h2 id="phase-title" class="text-2xl font-black mb-2 text-brand">Phase 1</h2>
+                    <h2 id="phase-title" class="text-2xl font-black mb-1 text-brand">Phase 1</h2>
                     <p id="phase-desc" class="text-slate-500 mb-8 font-semibold">Master your wake-up routine.</p>
                     <div id="road-map" class="flex flex-col items-center space-y-6 pb-12"></div>
                 </div>
@@ -154,7 +132,7 @@
                 </div>
                 <div class="p-6 space-y-6" id="journal-content"></div>
                 <div class="p-6 pt-0">
-                    <button onclick="saveJournal()" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">Save Entries</button>
+                    <button onclick="saveJournal()" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">Save Entries (+50 XP)</button>
                 </div>
             </div>
 
@@ -167,40 +145,34 @@
 
             <div id="view-account" class="app-view hidden p-6">
                 <h2 class="text-3xl font-black mb-6">Account</h2>
-                
                 <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm mb-6 text-center border border-slate-100 dark:border-slate-700 relative">
                     <input type="file" id="avatar-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
                     <div onclick="document.getElementById('avatar-upload').click()" class="w-28 h-28 bg-brand text-white rounded-full mx-auto flex items-center justify-center text-5xl mb-4 font-black shadow-lg cursor-pointer overflow-hidden border-4 border-white dark:border-slate-700 relative group">
                         <img id="profile-img" src="" class="w-full h-full object-cover hidden">
                         <span id="profile-emoji">👤</span>
-                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-camera text-white text-xl"></i></div>
                     </div>
                     <h3 class="font-black text-2xl" id="acc-name">User</h3>
                     <p class="text-slate-500 font-bold text-sm" id="acc-stats">Lvl 1 • 0 Streak</p>
-                    <p class="text-slate-400 text-xs mt-1" id="acc-date">Joined: Today</p>
                 </div>
-
+                
                 <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm space-y-4 border border-slate-100 dark:border-slate-700">
                     <div><label class="text-xs font-bold text-slate-400 uppercase">Email</label><div class="font-bold text-lg" id="acc-email">email</div></div>
                     <hr class="border-slate-100 dark:border-slate-700">
-                    
                     <form onsubmit="saveNewPassword(event)" class="space-y-3">
                         <label class="text-xs font-bold text-slate-400 uppercase">Security</label>
                         <div>
-                            <input type="password" id="acc-pass-current" autocomplete="current-password" placeholder="Current Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
-                            <input type="password" id="acc-pass-new" autocomplete="new-password" placeholder="New Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
+                            <input type="password" id="acc-pass-current" placeholder="Current Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
+                            <input type="password" id="acc-pass-new" placeholder="New Password" class="w-full bg-slate-50 dark:bg-slate-900 p-3 rounded-xl outline-none border border-slate-200 dark:border-slate-700 mb-2 font-medium" required>
                         </div>
                         <button type="submit" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-3 rounded-xl active:scale-95 transition">Update Password</button>
                     </form>
                 </div>
-
                 <div class="mt-6 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm flex justify-between items-center border border-slate-100 dark:border-slate-700 cursor-pointer" onclick="toggleTheme()">
                     <div class="font-bold text-lg"><i class="fa-solid fa-moon text-indigo-500 mr-2"></i> Dark Mode</div>
                     <div class="w-14 h-8 bg-slate-200 dark:bg-brand rounded-full relative transition-colors duration-300 pointer-events-none">
                         <div id="theme-knob" class="w-6 h-6 bg-white rounded-full absolute top-1 left-1 shadow-md transition-transform duration-300"></div>
                     </div>
                 </div>
-                
                 <button onclick="logout()" class="w-full mt-6 bg-red-50 dark:bg-red-900/20 text-red-500 font-black text-lg py-4 rounded-2xl active:scale-95 transition">Log Out</button>
             </div>
         </div>
@@ -218,16 +190,18 @@
         <div id="streak-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-t-8 border-brand">
                 <div class="text-6xl mb-4">🔥</div>
-                <h3 class="text-3xl font-black mb-2 text-brand">Great Job!</h3>
-                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg">Morning protocol complete. Streak updated!</p>
+                <h3 class="text-3xl font-black mb-2 text-brand">Protocol Complete!</h3>
+                <p class="text-slate-500 dark:text-slate-400 font-bold mb-4 text-lg">Streak +1</p>
+                <p id="streak-xp-text" class="text-green-500 font-black text-xl mb-8">+100 XP</p>
                 <button onclick="closeStreakModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-700 dark:text-white active:scale-95 transition">Close</button>
             </div>
         </div>
 
         <div id="level-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
             <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 w-full max-w-sm text-center anim-pop shadow-2xl border-t-8 border-brand">
-                <h3 class="text-3xl font-black mb-2" id="modal-title">Phase Task</h3>
-                <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 text-lg" id="modal-desc">Details</p>
+                <h3 class="text-2xl font-black mb-2 text-brand" id="modal-title">Road Node</h3>
+                <p class="text-slate-700 dark:text-slate-200 font-bold mb-4 text-lg" id="modal-desc">Details</p>
+                <p id="modal-xp-reward" class="text-green-500 font-black text-lg mb-8">+50 XP</p>
                 <div class="flex flex-col space-y-3">
                     <button id="modal-btn-done" onclick="beatLevel()" class="w-full py-4 bg-brand text-white font-black text-xl rounded-2xl shadow-lg active:scale-95 transition">Complete Task</button>
                     <button onclick="closeLevelModal()" class="w-full py-4 bg-slate-100 dark:bg-slate-700 font-bold rounded-2xl text-slate-500">Close</button>
@@ -238,13 +212,15 @@
     </div>
 
     <script>
+        // --- DATA STATE ---
         let db = { 
-            name:'', email:'', pass:'', joinDate:'', streak:0, lvl:1, theme:'light', avatarStr:'', 
-            routine:[{id:1, text:"Wake up at 6 AM", done:false}, {id:2, text:"Drink Water", done:false}, {id:3, text:"Make Bed", done:false}], 
-            journal: { daily:['','','','',''], weekly:['','','','',''], monthly:['','','','',''] },
-            completedToday: false
+            name:'', email:'', pass:'', joinDate:'', theme:'light', avatarStr:'', 
+            lvl: 1, xp: 0, streak: 0, roadNode: 1, journalCount: 0, completedToday: false,
+            unlockedAch: [],
+            routine:[{id:1, text:"Wake up early", done:false}, {id:2, text:"Drink Water", done:false}, {id:3, text:"10 Pushups", done:false}], 
+            journal: { daily:['','','','',''], weekly:['','','','',''], monthly:['','','','',''] }
         };
-        const DB_KEY = 'RiseQuest_v4_Data';
+        const DB_KEY = 'RiseQuest_v5_Data';
         
         let isEditingRoutine = false;
         let castleViewIndex = 0;
@@ -253,46 +229,49 @@
         let activeJournalTab = 'daily';
         let modalLevelData = null;
 
+        // REAL ESTATE PROGRESSION
         const CASTLES = [
-            { icon: '🏕️', name: 'Tent', req: {lvl: 1, phase: 1, streak: 0} },
-            { icon: '🏚️', name: 'Shack', req: {lvl: 3, phase: 1, streak: 2} },
-            { icon: '🛖', name: 'Hut', req: {lvl: 5, phase: 1, streak: 5} },
-            { icon: '🏡', name: 'Cabin', req: {lvl: 10, phase: 2, streak: 10} },
-            { icon: '🏠', name: 'House', req: {lvl: 15, phase: 2, streak: 15} },
-            { icon: '🏘️', name: 'Estate', req: {lvl: 20, phase: 3, streak: 20} },
-            { icon: '🏛️', name: 'Manor', req: {lvl: 30, phase: 3, streak: 30} },
-            { icon: '🏦', name: 'Mansion', req: {lvl: 45, phase: 4, streak: 45} },
-            { icon: '🏰', name: 'Castle', req: {lvl: 60, phase: 5, streak: 60} },
-            { icon: '🏯', name: 'Fortress', req: {lvl: 80, phase: 6, streak: 80} },
-            { icon: '🕌', name: 'Palace', req: {lvl: 100, phase: 7, streak: 100} },
-            { icon: '🛕', name: 'Sanctuary', req: {lvl: 125, phase: 8, streak: 125} },
-            { icon: '🏙️', name: 'Metropolis', req: {lvl: 150, phase: 9, streak: 150} },
-            { icon: '🌌', name: 'Astral Keep', req: {lvl: 200, phase: 10, streak: 200} },
-            { icon: '👑', name: 'Divine Citadel', req: {lvl: 250, phase: 10, streak: 250} }
+            { icon: '🏕️', name: 'Tent', req: {lvl: 1} },
+            { icon: '🏚️', name: 'Shack', req: {lvl: 3} },
+            { icon: '🛖', name: 'Cabin', req: {lvl: 5} },
+            { icon: '🏡', name: 'Cottage', req: {lvl: 8} },
+            { icon: '🏠', name: 'Family House', req: {lvl: 12} },
+            { icon: '🏘️', name: 'Modern House', req: {lvl: 18} },
+            { icon: '🏛️', name: 'Villa', req: {lvl: 25} },
+            { icon: '🏦', name: 'Mansion', req: {lvl: 35} },
+            { icon: '⛲', name: 'Estate', req: {lvl: 50} },
+            { icon: '🏰', name: 'Grand Estate', req: {lvl: 70} },
+            { icon: '🕋', name: 'Luxury Compound', req: {lvl: 90} },
+            { icon: '🏢', name: 'Billionaire Manor', req: {lvl: 115} },
+            { icon: '🏙️', name: 'Elite Penthouse', req: {lvl: 145} },
+            { icon: '🕌', name: 'Royal Palace', req: {lvl: 180} },
+            { icon: '👑', name: 'Imperial Sovereign', req: {lvl: 250} }
         ];
 
+        // ROAD PHASES
         const ROAD_PHASES = [
-            { name: "Morning Base", desc: "Build a foundation." },
-            { name: "Iron Body", desc: "Physical mastery begins." },
-            { name: "Clear Mind", desc: "Remove brain fog." },
-            { name: "Conquer Day", desc: "Sustain the energy." },
-            { name: "Unbreakable", desc: "Hard habits only." },
-            { name: "Deep Focus", desc: "Eliminate distractions." },
-            { name: "The Vision", desc: "Plan the dream." },
-            { name: "Execution", desc: "Put in the work." },
-            { name: "Empire", desc: "Scale your life." },
-            { name: "Mastery", desc: "The ultimate peak." }
+            { name: "Morning Base", desc: "Build physical habits." },
+            { name: "Iron Body", desc: "Push your physical limits." },
+            { name: "Clear Mind", desc: "Master your mental state." },
+            { name: "Deep Work Basics", desc: "Learn to focus." },
+            { name: "The Hustle", desc: "Build your project." },
+            { name: "Scale Up", desc: "Increase work output." },
+            { name: "High Performance", desc: "Peak productivity." },
+            { name: "Wealth Builder", desc: "Focus on finances." },
+            { name: "Life Mastery", desc: "Optimize everything." },
+            { name: "Sovereign", desc: "The ultimate peak." }
         ];
 
+        // ACHIEVEMENTS CATEGORIES
         const ACH_CATEGORIES = [
-            {name: 'Streaks', emoji: '🔥'}, {name: 'Morning', emoji: '🌅'}, {name: 'Fitness', emoji: '💪'}, 
-            {name: 'Mindset', emoji: '🧠'}, {name: 'Focus', emoji: '🎯'}, {name: 'Wealth', emoji: '💰'}, 
-            {name: 'Business', emoji: '💼'}, {name: 'Learning', emoji: '📚'}, {name: 'Zen', emoji: '🧘'}, {name: 'Mastery', emoji: '👑'}
+            {id: 'streak', name: 'Streaks', emoji: '🔥'}, {id: 'road', name: 'The Road', emoji: '🗺️'}, 
+            {id: 'estate', name: 'Estates', emoji: '🏰'}, {id: 'journal', name: 'Journaling', emoji: '✍️'}
         ];
 
+        // --- CORE LOGIC ---
         window.onload = () => {
             if(localStorage.getItem(DB_KEY)) {
-                db = JSON.parse(localStorage.getItem(DB_KEY));
+                db = Object.assign(db, JSON.parse(localStorage.getItem(DB_KEY)));
                 applyTheme();
                 initApp();
             }
@@ -300,7 +279,6 @@
 
         function saveDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
 
-        // --- AUTH ---
         function toggleAuth() {
             document.getElementById('signup-form').classList.toggle('hidden');
             document.getElementById('login-form').classList.toggle('hidden');
@@ -313,8 +291,8 @@
                 db.email = document.getElementById('reg-email').value;
                 db.pass = document.getElementById('reg-pass').value;
                 db.joinDate = new Date().toLocaleDateString();
-                document.getElementById('auth-view').classList.add('hidden');
-                document.getElementById('onboarding-view').classList.remove('hidden');
+                saveDB();
+                initApp();
             } else {
                 const em = document.getElementById('log-email').value;
                 const pa = document.getElementById('log-pass').value;
@@ -324,36 +302,17 @@
             }
         }
 
-        // --- ONBOARDING ---
-        function nextOB(current, ans) {
-            document.getElementById(`ob-${current}`).classList.add('hidden');
-            if(current === 'q1') {
-                if(ans === 'no') document.getElementById('ob-q2-tired').classList.remove('hidden');
-                else document.getElementById('ob-q4-scroll').classList.remove('hidden');
-            } else if(current === 'tired') {
-                if(ans === 'yes') document.getElementById('ob-q4-scroll').classList.remove('hidden');
-                else document.getElementById('ob-q3-better').classList.remove('hidden');
-            }
-        }
-
-        function finishOB() {
-            saveDB();
-            document.getElementById('onboarding-view').classList.add('hidden');
-            initApp();
-        }
-
-        // --- INIT APP ---
         function initApp() {
             document.getElementById('auth-view').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('bottom-nav').classList.remove('hidden');
             
-            // Set Castle to highest unlocked
+            updateXPUI();
+            
             let furthest = 0;
-            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
+            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl) furthest = i; });
             castleViewIndex = furthest;
 
-            updateTopBar();
             renderCastleView();
             renderProtocol();
             buildRoadTabs();
@@ -365,9 +324,63 @@
             switchTab('home');
         }
 
-        function updateTopBar() {
+        // --- TOAST NOTIFICATIONS ---
+        function showToast(title, desc, icon) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast bg-white dark:bg-slate-800 border-l-4 border-brand p-4 rounded-xl shadow-2xl flex items-center w-72';
+            toast.innerHTML = `
+                <div class="text-2xl mr-3">${icon}</div>
+                <div>
+                    <h4 class="font-black text-sm text-slate-800 dark:text-white">${title}</h4>
+                    <p class="text-xs font-bold text-slate-500">${desc}</p>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        // --- XP & LEVEL SYSTEM ---
+        function getRequiredXP(lvl) {
+            return 50 * lvl; // Lvl 1->2 is 50, Lvl 2->3 is 100, etc.
+        }
+
+        function addXP(amount, source) {
+            db.xp += amount;
+            let req = getRequiredXP(db.lvl);
+            let leveledUp = false;
+            
+            while(db.xp >= req) {
+                db.xp -= req;
+                db.lvl++;
+                req = getRequiredXP(db.lvl);
+                leveledUp = true;
+            }
+            
+            updateXPUI();
+            saveDB();
+            checkAchievements();
+            
+            if(leveledUp) {
+                showToast(`Level Up! 🌟`, `You are now Level ${db.lvl}`, '⭐');
+                // Check if new castle unlocked
+                let furthest = 0;
+                CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl) furthest = i; });
+                if(furthest > castleViewIndex) {
+                    castleViewIndex = furthest;
+                    renderCastleView();
+                }
+            } else if (source) {
+                showToast(`+${amount} XP`, source, '⚡');
+            }
+        }
+
+        function updateXPUI() {
             document.getElementById('ui-streak').innerText = db.streak;
             document.getElementById('ui-lvl').innerText = `Lvl ${db.lvl}`;
+            let req = getRequiredXP(db.lvl);
+            document.getElementById('ui-xp-text').innerText = `${db.xp}/${req}`;
+            document.getElementById('ui-xp-bar').style.width = `${(db.xp / req) * 100}%`;
         }
 
         // --- 1. CASTLE ---
@@ -386,21 +399,18 @@
             display.innerText = c.icon;
             document.getElementById('castle-name').innerText = c.name;
             
-            const isUnlocked = db.lvl >= c.req.lvl && db.streak >= c.req.streak;
-            
-            if(isUnlocked) {
+            if(db.lvl >= c.req.lvl) {
                 document.getElementById('castle-status').innerHTML = `<span class="text-green-500"><i class="fa-solid fa-unlock text-xs"></i> Unlocked</span>`;
                 display.classList.remove('locked-castle');
-                display.style.filter = '';
                 lockIcon.classList.add('hidden');
             } else {
-                document.getElementById('castle-status').innerHTML = `<i class="fa-solid fa-lock text-xs"></i> Req: Lvl ${c.req.lvl} | Streak ${c.req.streak}`;
+                document.getElementById('castle-status').innerHTML = `<i class="fa-solid fa-lock text-xs"></i> Requires Level ${c.req.lvl}`;
                 display.classList.add('locked-castle');
                 lockIcon.classList.remove('hidden');
             }
         }
 
-        // --- 1. PROTOCOL (Auto-streak) ---
+        // --- 1. PROTOCOL ---
         function toggleEditRoutine() {
             isEditingRoutine = !isEditingRoutine;
             document.getElementById('edit-routine-btn').innerText = isEditingRoutine ? "Done" : "Edit";
@@ -411,83 +421,78 @@
         function renderProtocol() {
             const list = document.getElementById('routine-list');
             list.innerHTML = '';
-            
             db.routine.forEach(t => {
                 if(isEditingRoutine) {
                     list.innerHTML += `
                         <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl flex items-center shadow-sm border border-slate-200 dark:border-slate-700">
                             <button onclick="deleteRoutineTask(${t.id})" class="text-red-500 mr-4"><i class="fa-solid fa-trash"></i></button>
                             <input type="text" value="${t.text}" onblur="updateRoutineText(${t.id}, this.value)" class="flex-1 bg-transparent font-bold outline-none border-b border-slate-300 dark:border-slate-600">
-                            <i class="fa-solid fa-pencil text-slate-300 ml-2"></i>
-                        </div>
-                    `;
+                        </div>`;
                 } else {
                     const icon = t.done ? '<i class="fa-solid fa-circle-check text-green-500 text-2xl"></i>' : '<i class="fa-regular fa-circle text-slate-300 text-2xl"></i>';
                     const strike = t.done ? 'line-through text-slate-400' : 'font-bold';
                     list.innerHTML += `
                         <div onclick="toggleProtocolTask(${t.id})" class="bg-white dark:bg-slate-800 p-5 rounded-2xl flex items-center shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer active:scale-95 transition">
-                            <div class="mr-4">${icon}</div>
-                            <span class="text-lg ${strike}">${t.text}</span>
-                        </div>
-                    `;
+                            <div class="mr-4">${icon}</div><span class="text-lg ${strike}">${t.text}</span>
+                        </div>`;
                 }
             });
         }
 
         function toggleProtocolTask(id) {
-            if(db.completedToday) return; // Prevent unchecking if already finished today
-            
+            if(db.completedToday) return; 
             const t = db.routine.find(x => x.id === id);
             t.done = !t.done;
             renderProtocol();
             
-            // Auto check if all complete
-            const allDone = db.routine.every(x => x.done);
-            if(allDone && !db.completedToday) {
+            if(db.routine.every(x => x.done) && !db.completedToday) {
                 db.completedToday = true;
                 db.streak++;
-                saveDB();
-                updateTopBar();
+                let xpGain = 50 + (db.streak * 5); // XP scales with streak
+                
+                document.getElementById('streak-xp-text').innerText = `+${xpGain} XP`;
                 document.getElementById('streak-modal').classList.remove('hidden');
                 document.getElementById('streak-modal').classList.add('flex');
-            } else {
-                saveDB();
-            }
+                
+                addXP(xpGain, null); // Don't show generic toast, modal handles it
+            } else { saveDB(); }
         }
 
         function closeStreakModal() {
             document.getElementById('streak-modal').classList.add('hidden');
             document.getElementById('streak-modal').classList.remove('flex');
-            
-            // Check if castle leveled up
-            let furthest = 0;
-            CASTLES.forEach((c, i) => { if(db.lvl >= c.req.lvl && db.streak >= c.req.streak) furthest = i; });
-            if(furthest > castleViewIndex) {
-                castleViewIndex = furthest;
-                renderCastleView();
-            }
-            
-            // Reset routine for "tomorrow" simulation (In a real app, use date checking)
-            db.routine.forEach(t => t.done = false);
+            db.routine.forEach(t => t.done = false); // Reset for demo
             db.completedToday = false;
             saveDB();
             renderProtocol();
         }
 
-        function addRoutineTask() {
-            db.routine.push({ id: Date.now(), text: "New Habit", done: false });
-            renderProtocol();
-        }
-        function deleteRoutineTask(id) {
-            db.routine = db.routine.filter(x => x.id !== id);
-            renderProtocol();
-        }
-        function updateRoutineText(id, val) {
-            db.routine.find(x => x.id === id).text = val;
-            saveDB();
+        function addRoutineTask() { db.routine.push({ id: Date.now(), text: "New Habit", done: false }); renderProtocol(); }
+        function deleteRoutineTask(id) { db.routine = db.routine.filter(x => x.id !== id); renderProtocol(); }
+        function updateRoutineText(id, val) { db.routine.find(x => x.id === id).text = val; saveDB(); }
+
+        // --- 2. ROAD DYNAMIC TASKS ---
+        function getRoadTaskDetails(node) {
+            let phase = Math.ceil(node / 25);
+            let diff = node % 25; // 0-24
+            let xp = 20 + (node * 5); // Harder tasks give more XP
+            let text = "";
+            
+            if(phase <= 3) {
+                let r = 10 + diff;
+                let types = [`${r} Pushups, ${r} Sit-ups, ${30+diff*2}s Plank`, `Run ${1+(diff*0.1).toFixed(1)} km`, `${10+diff} min Meditation`, `Read ${10+diff} pages`];
+                text = types[node % types.length];
+            } else if(phase <= 7) {
+                let hrs = phase >= 6 ? 2 : 1;
+                let types = [`${hrs} hr Deep Work on Side Hustle`, `Draft a business plan section`, `Reach out to ${1+diff} mentors/clients`, `Learn a new skill for 60 mins`];
+                text = types[node % types.length];
+            } else {
+                let types = [`Invest/Save $${50+diff*5} today`, `Execute perfect daily protocol`, `Publish/Launch a piece of work`, `Advanced ${5+diff}km Run`];
+                text = types[node % types.length];
+            }
+            return { text, xp };
         }
 
-        // --- 2. ROAD (Unique Tasks Generator) ---
         function buildRoadTabs() {
             const tabs = document.getElementById('phase-tabs');
             tabs.innerHTML = '';
@@ -497,44 +502,33 @@
             }
         }
 
-        function switchPhase(p) {
-            currentPhaseView = p;
-            buildRoadTabs();
-            renderRoadMap();
-        }
-
-        function generateUniqueTask(level) {
-            const verbs = ["Complete", "Achieve", "Master", "Conquer", "Execute"];
-            const nouns = ["Morning Routine", "Deep Work", "Meditation", "Fitness Goal", "Mindset Shift", "Hydration Target", "Reading Quota"];
-            const v = verbs[level % verbs.length];
-            const n = nouns[level % nouns.length];
-            return `${v} your ${n} Protocol.`;
-        }
+        function switchPhase(p) { currentPhaseView = p; buildRoadTabs(); renderRoadMap(); }
 
         function renderRoadMap() {
             const pData = ROAD_PHASES[currentPhaseView-1];
             document.getElementById('phase-title').innerText = `Phase ${currentPhaseView}: ${pData.name}`;
             document.getElementById('phase-desc').innerText = pData.desc;
-            
             const map = document.getElementById('road-map');
             map.innerHTML = '';
             
             for(let i=1; i<=25; i++) {
-                let actualLevel = ((currentPhaseView - 1) * 25) + i;
-                let status = actualLevel < db.lvl ? 'completed' : (actualLevel === db.lvl ? 'current' : 'locked');
-                let icon = actualLevel < db.lvl ? '<i class="fa-solid fa-check"></i>' : (actualLevel === db.lvl ? '<i class="fa-solid fa-star"></i>' : actualLevel);
+                let actualNode = ((currentPhaseView - 1) * 25) + i;
+                let status = actualNode < db.roadNode ? 'completed' : (actualNode === db.roadNode ? 'current' : 'locked');
+                let icon = actualNode < db.roadNode ? '<i class="fa-solid fa-check"></i>' : (actualNode === db.roadNode ? '<i class="fa-solid fa-star"></i>' : actualNode);
                 
                 let ml = i % 2 === 0 ? 'ml-12' : (i % 3 === 0 ? 'mr-12' : '');
-                
-                map.innerHTML += `<div onclick="openLevelModal(${actualLevel}, '${status}')" class="node ${status} ${ml}">${icon}</div>`;
+                map.innerHTML += `<div onclick="openLevelModal(${actualNode}, '${status}')" class="node ${status} ${ml}">${icon}</div>`;
                 if(i < 25) map.innerHTML += `<div class="w-2 h-10 bg-slate-200 dark:bg-slate-700 ${ml} rounded-full -my-2 z-0"></div>`;
             }
         }
 
-        function openLevelModal(lvl, status) {
-            modalLevelData = { lvl, status };
-            document.getElementById('modal-title').innerText = `Level ${lvl}`;
-            document.getElementById('modal-desc').innerText = generateUniqueTask(lvl);
+        function openLevelModal(node, status) {
+            let task = getRoadTaskDetails(node);
+            modalLevelData = { node, status, xp: task.xp };
+            
+            document.getElementById('modal-title').innerText = `Road Node ${node}`;
+            document.getElementById('modal-desc').innerText = task.text;
+            document.getElementById('modal-xp-reward').innerText = `+${task.xp} XP`;
             
             const btn = document.getElementById('modal-btn-done');
             if(status === 'locked') {
@@ -557,24 +551,14 @@
 
         function beatLevel() {
             if(!modalLevelData || modalLevelData.status !== 'current') return;
-            db.lvl++;
-            saveDB();
-            updateTopBar();
+            db.roadNode++;
+            addXP(modalLevelData.xp, "Road Node Complete");
             renderRoadMap();
             closeLevelModal();
         }
-        function closeLevelModal() { 
-            document.getElementById('level-modal').classList.add('hidden'); 
-            document.getElementById('level-modal').classList.remove('flex');
-        }
+        function closeLevelModal() { document.getElementById('level-modal').classList.add('hidden'); document.getElementById('level-modal').classList.remove('flex'); }
 
         // --- 3. JOURNAL ---
-        const J_QUESTIONS = {
-            daily: ["What is your main goal today?", "What are you grateful for?", "How will you improve?", "Potential obstacle?", "One positive thought?"],
-            weekly: ["Biggest win this week?", "What didn't go well?", "What did you learn?", "Focus for next week?", "How was your energy?"],
-            monthly: ["Review monthly goals.", "Best memory?", "Biggest challenge?", "Financial check-in?", "Next month's intention."]
-        };
-
         function switchJournal(tab) {
             activeJournalTab = tab;
             ['daily','weekly','monthly'].forEach(t => {
@@ -584,28 +568,53 @@
             document.getElementById(`btn-j-${tab}`).classList.add('bg-brand', 'text-white');
             document.getElementById(`btn-j-${tab}`).classList.remove('bg-slate-100', 'text-slate-500', 'dark:bg-slate-800');
             
+            const q = {daily: ["Main goal?", "Grateful for?", "Improvement?", "Obstacle?", "Positive thought?"], weekly: ["Win?", "Loss?", "Learned?", "Focus?", "Energy?"], monthly: ["Review.", "Memory?", "Challenge?", "Finance?", "Intention."]};
+            
             const content = document.getElementById('journal-content');
             content.innerHTML = '';
-            
-            J_QUESTIONS[tab].forEach((q, i) => {
+            q[tab].forEach((text, i) => {
                 content.innerHTML += `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <label class="font-bold text-brand mb-2 block">${i+1}. ${q}</label>
-                        <textarea id="j-input-${i}" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none font-medium text-slate-700 dark:text-slate-200">${db.journal[tab][i]}</textarea>
-                    </div>
-                `;
+                        <label class="font-bold text-brand mb-2 block">${i+1}. ${text}</label>
+                        <textarea id="j-input-${i}" class="w-full bg-slate-50 dark:bg-slate-900 p-4 rounded-xl resize-none h-24 outline-none font-medium">${db.journal[tab][i]}</textarea>
+                    </div>`;
             });
         }
 
         function saveJournal() {
-            for(let i=0; i<5; i++) {
-                db.journal[activeJournalTab][i] = document.getElementById(`j-input-${i}`).value;
-            }
-            saveDB();
+            for(let i=0; i<5; i++) { db.journal[activeJournalTab][i] = document.getElementById(`j-input-${i}`).value; }
+            db.journalCount++;
+            addXP(50, "Journal Saved");
             alert("Journal saved!");
         }
 
-        // --- 4. ACHIEVEMENTS ---
+        // --- 4. DYNAMIC ACHIEVEMENTS ---
+        const MASTER_ACHIEVEMENTS = [];
+        // Generate 200 varied achievements dynamically into the array
+        for(let i=1; i<=50; i++) MASTER_ACHIEVEMENTS.push({ id: `s${i}`, cat: 'streak', req: i*2, title: `Streak Lvl ${i}`, desc: `Reach a ${i*2} day streak.`, xp: 20*i });
+        for(let i=1; i<=50; i++) MASTER_ACHIEVEMENTS.push({ id: `r${i}`, cat: 'road', req: i*5, title: `Road Warrior ${i}`, desc: `Complete road node ${i*5}.`, xp: 30*i });
+        for(let i=1; i<=50; i++) MASTER_ACHIEVEMENTS.push({ id: `e${i}`, cat: 'estate', req: i*3, title: `Estate Mogul ${i}`, desc: `Reach Player Level ${i*3}.`, xp: 50*i });
+        for(let i=1; i<=50; i++) MASTER_ACHIEVEMENTS.push({ id: `j${i}`, cat: 'journal', req: i*2, title: `Writer ${i}`, desc: `Save ${i*2} journal entries.`, xp: 20*i });
+
+        function checkAchievements() {
+            MASTER_ACHIEVEMENTS.forEach(ach => {
+                if(!db.unlockedAch.includes(ach.id)) {
+                    let unlocked = false;
+                    if(ach.cat === 'streak' && db.streak >= ach.req) unlocked = true;
+                    if(ach.cat === 'road' && db.roadNode > ach.req) unlocked = true;
+                    if(ach.cat === 'estate' && db.lvl >= ach.req) unlocked = true;
+                    if(ach.cat === 'journal' && db.journalCount >= ach.req) unlocked = true;
+                    
+                    if(unlocked) {
+                        db.unlockedAch.push(ach.id);
+                        showToast(`🏆 Achievement Unlocked!`, `Check ${ach.cat} section. +${ach.xp} XP`, '🎉');
+                        db.xp += ach.xp; // Add silently to avoid infinite loops, UI updates via parent
+                    }
+                }
+            });
+            saveDB();
+        }
+
         function buildAchTabs() {
             const tabs = document.getElementById('ach-tabs');
             tabs.innerHTML = '';
@@ -615,39 +624,29 @@
             });
         }
 
-        function switchAchCat(i) {
-            currentAchCategory = i;
-            buildAchTabs();
-            renderAchievements();
-        }
-
-        function getAchDesc(catName, tier) {
-            if(catName === 'Streaks') return `Reach a ${tier * 5} day streak.`;
-            if(catName === 'Morning') return `Complete protocol ${tier * 10} times.`;
-            return `Unlock Level ${(currentAchCategory * 20) + tier}.`;
-        }
+        function switchAchCat(i) { currentAchCategory = i; buildAchTabs(); renderAchievements(); }
 
         function renderAchievements() {
             const grid = document.getElementById('achievements-grid');
             grid.innerHTML = '';
-            const cat = ACH_CATEGORIES[currentAchCategory];
+            const catId = ACH_CATEGORIES[currentAchCategory].id;
+            const emoji = ACH_CATEGORIES[currentAchCategory].emoji;
             
-            for(let i=1; i<=20; i++) {
-                let reqLvl = (currentAchCategory * 20) + i;
-                let isUnlocked = db.lvl >= reqLvl;
-                
+            const filtered = MASTER_ACHIEVEMENTS.filter(a => a.cat === catId);
+            
+            filtered.forEach(ach => {
+                let isUnlocked = db.unlockedAch.includes(ach.id);
                 let bgClass = isUnlocked ? 'bg-white dark:bg-slate-800 border-brand border-2 shadow-md' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 border opacity-60 grayscale';
                 let iconColor = isUnlocked ? 'text-brand' : 'text-slate-400';
-                let desc = getAchDesc(cat.name, i);
                 
                 grid.innerHTML += `
                     <div class="p-4 rounded-3xl text-center ${bgClass}">
-                        <div class="text-3xl mb-2 ${iconColor}">${cat.emoji}</div>
-                        <div class="font-black text-sm text-slate-700 dark:text-slate-200">${cat.name} Tier ${i}</div>
-                        <div class="text-xs font-bold text-slate-500 mt-1">${desc}</div>
-                    </div>
-                `;
-            }
+                        <div class="text-3xl mb-2 ${iconColor}">${emoji}</div>
+                        <div class="font-black text-sm text-slate-700 dark:text-slate-200">${ach.title}</div>
+                        <div class="text-[10px] font-bold text-slate-500 mt-1">${ach.desc}</div>
+                        <div class="text-[10px] font-black text-green-500 mt-2">+${ach.xp} XP</div>
+                    </div>`;
+            });
         }
 
         // --- 5. ACCOUNT ---
@@ -655,8 +654,6 @@
             document.getElementById('acc-name').innerText = db.name;
             document.getElementById('acc-email').innerText = db.email;
             document.getElementById('acc-stats').innerText = `Lvl ${db.lvl} • ${db.streak} Streak`;
-            document.getElementById('acc-date').innerText = `Joined: ${db.joinDate}`;
-            
             if(db.avatarStr) {
                 document.getElementById('profile-img').src = db.avatarStr;
                 document.getElementById('profile-img').classList.remove('hidden');
@@ -668,58 +665,35 @@
             e.preventDefault();
             const current = document.getElementById('acc-pass-current').value;
             const newPass = document.getElementById('acc-pass-new').value;
-            
-            if(current !== db.pass) {
-                alert("Current password incorrect!");
-                return;
-            }
+            if(current !== db.pass) return alert("Current password incorrect!");
             db.pass = newPass;
             saveDB();
-            document.getElementById('acc-pass-current').value = '';
-            document.getElementById('acc-pass-new').value = '';
-            alert("Password updated successfully!");
+            document.getElementById('acc-pass-current').value = ''; document.getElementById('acc-pass-new').value = '';
+            alert("Password updated!");
         }
 
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
-            reader.onload = (event) => {
-                db.avatarStr = event.target.result;
-                saveDB();
-                setupAccount();
-            };
+            reader.onload = (event) => { db.avatarStr = event.target.result; saveDB(); setupAccount(); };
             reader.readAsDataURL(file);
         }
 
-        function toggleTheme() {
-            db.theme = db.theme === 'light' ? 'dark' : 'light';
-            saveDB();
-            applyTheme();
-        }
+        function toggleTheme() { db.theme = db.theme === 'light' ? 'dark' : 'light'; saveDB(); applyTheme(); }
 
         function applyTheme() {
-            const html = document.documentElement;
-            const knob = document.getElementById('theme-knob');
-            if(db.theme === 'dark') {
-                html.classList.add('dark');
-                if(knob) knob.style.transform = 'translateX(24px)';
-            } else {
-                html.classList.remove('dark');
-                if(knob) knob.style.transform = 'translateX(0)';
-            }
+            const html = document.documentElement; const knob = document.getElementById('theme-knob');
+            if(db.theme === 'dark') { html.classList.add('dark'); if(knob) knob.style.transform = 'translateX(24px)'; } 
+            else { html.classList.remove('dark'); if(knob) knob.style.transform = 'translateX(0)'; }
         }
 
-        function logout() { 
-            localStorage.removeItem(DB_KEY); // Full reset for demo
-            location.reload(); 
-        }
+        function logout() { location.reload(); }
 
-        // --- UTILS ---
+        // --- NAVIGATION ---
         function switchTab(tab) {
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
             document.getElementById(`view-${tab}`).classList.remove('hidden');
-            
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.classList.remove('text-brand');
                 if(!b.innerHTML.includes('bg-brand')) b.classList.add('text-slate-400');
